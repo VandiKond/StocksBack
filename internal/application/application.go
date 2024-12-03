@@ -3,8 +3,14 @@ package application
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"time"
+
+	"github.com/VandiKond/StocksBack/config/config"
+	"github.com/VandiKond/StocksBack/config/user_cfg"
+	"github.com/VandiKond/StocksBack/pkg/file_db"
+	"github.com/VandiKond/StocksBack/pkg/hash"
 )
 
 type Application struct {
@@ -31,6 +37,31 @@ func (a *Application) Run() error {
 
 	// The program
 	log.Println("the program is working")
+	cfg, err := config.LoadConfig("config/config.yml")
+	if err != nil {
+		panic(err)
+	}
+	hash.SALT = cfg.Salt
+	db, err := file_db.NewFileDB("users.json")
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+
+	err = db.Create()
+	if err != nil {
+		panic(err)
+	}
+	length, err := db.GetLen()
+	if err != nil {
+		panic(err)
+	}
+	usr, err := user_cfg.NewUser("usr", "pass", length)
+	if err != nil {
+		panic(err)
+	}
+	db.NewUser(*usr)
+
 	// The program end
 
 	// Returning without error
@@ -49,5 +80,5 @@ func (a *Application) ExitTimeOut() {
 	// Exiting after timeout
 	fmt.Println("")
 	log.Printf("timeout %s has passed. Ending the program", a.Duration)
-	os.Exit(418)
+	os.Exit(http.StatusTeapot)
 }

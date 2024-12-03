@@ -7,4 +7,6 @@ database :
   password : "12345"
   name : "users"
 
+salt : "nya_nya UwU :D :B"
+
   

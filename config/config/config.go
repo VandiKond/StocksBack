@@ -1,7 +1,6 @@
 package config
 
 import (
-	"log"
 	"os"
 
 	"github.com/VandiKond/vanerrors"
@@ -22,26 +21,26 @@ type DBCfg struct {
 type StdCfg struct {
 	Port     string `yaml:"port"`
 	Database DBCfg  `yaml:"database"`
+	Salt     string `yaml:"salt"`
 }
 
 func (cfg StdCfg) GetDBConData() DBCfg {
 	return cfg.Database
 }
 
-func LoadConfig(path string) *StdCfg {
+func LoadConfig(path string) (*StdCfg, error) {
 	var config StdCfg
 
 	data, err := os.ReadFile(path)
 	if err != nil {
-		err = vanerrors.NewWrap("error reading config file", err, vanerrors.EmptyHandler)
-		log.Fatal(err)
+		return nil, vanerrors.NewWrap("error reading config file", err, vanerrors.EmptyHandler)
+
 	}
 
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		err = vanerrors.NewWrap("error unmarshaling config file", err, vanerrors.EmptyHandler)
-		log.Fatal(err)
+		return nil, vanerrors.NewWrap("error unmarshaling config file", err, vanerrors.EmptyHandler)
 	}
 
-	return &config
+	return &config, nil
 }

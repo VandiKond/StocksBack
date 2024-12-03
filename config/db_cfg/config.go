@@ -16,6 +16,6 @@ type DataBase interface {
 	SelectOneBy(any) (*user_cfg.User, error)
 	Update(user_cfg.User) error
 	UpdateGroup([]user_cfg.User) error
-	GetLast() (uint64, error)
+	GetLen() (uint64, error)
 	io.Closer
 }

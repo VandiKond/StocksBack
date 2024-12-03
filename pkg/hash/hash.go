@@ -12,6 +12,10 @@ const (
 	ErrorGettingHash = "error getting hash" // error getting hash
 )
 
+var (
+	SALT = ""
+)
+
 // A function that's getting the password and returning it's hash (sha-3-256)
 //
 // password -- the user password
@@ -30,7 +34,7 @@ func HashPassword(password string) (string, error) {
 	}
 
 	// Writing the slice in sha3
-	sha3 := hash.Sum(nil)
+	sha3 := hash.Sum([]byte(SALT))
 
 	// Returning the slice as a string
 	return fmt.Sprintf("%x", sha3), nil

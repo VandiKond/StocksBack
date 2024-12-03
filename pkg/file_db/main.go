@@ -3,6 +3,7 @@ package file_db
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 
 	"github.com/VandiKond/StocksBack/config/user_cfg"
@@ -12,7 +13,6 @@ import (
 // The errors
 const (
 	ErrorOpeningFile  = "error opening file"  // error opening file
-	ErrorCreatingData = "error creating data" // error creating data
 	ErrorEncodingData = "error encoding data" // error encoding data
 	ErrorDecodingData = "error decoding data" // error encoding data
 	InvalidQuery      = "invalid query"       // invalid query
@@ -39,11 +39,25 @@ func (db *FileDB) Create() error {
 	usrArr := []user_cfg.User{}
 	err := json.NewDecoder(db).Decode(&usrArr)
 	db.data = usrArr
-	if err != nil {
-		err := json.NewEncoder(db).Encode(usrArr)
+	if err == io.EOF {
+		err = db.Save()
 		if err != nil {
-			return vanerrors.NewWrap(ErrorCreatingData, err, vanerrors.EmptyHandler)
+			return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
 		}
+	} else if err != nil {
+		return vanerrors.NewWrap(ErrorDecodingData, err, vanerrors.EmptyHandler)
+	}
+	return nil
+}
+
+func (db *FileDB) Save() error {
+	jsonData, err := json.Marshal(db.data)
+	if err != nil {
+		return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
+	}
+	_, err = db.WriteAt(jsonData, 0)
+	if err != nil {
+		return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
 	}
 	return nil
 }
@@ -51,12 +65,15 @@ func (db *FileDB) Create() error {
 func (db *FileDB) NewUser(usr user_cfg.User) error {
 	usrArr := db.data
 
+	if usr.Id != uint64(len(usrArr)) {
+		return vanerrors.NewSimple(InvalidId)
+	}
 	usrArr = append(usrArr, usr)
-	err := json.NewEncoder(db).Encode(usrArr)
+	db.data = usrArr
+	err := db.Save()
 	if err != nil {
 		return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
 	}
-	db.data = usrArr
 	return nil
 }
 
@@ -158,11 +175,11 @@ func (db *FileDB) Update(usr user_cfg.User) error {
 	}
 	usrArr[usr.Id] = usr
 
-	err := json.NewEncoder(db).Encode(usrArr)
+	db.data = usrArr
+	err := db.Save()
 	if err != nil {
 		return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
 	}
-	db.data = usrArr
 	return nil
 }
 
@@ -175,14 +192,14 @@ func (db *FileDB) UpdateGroup(users []user_cfg.User) error {
 		usrArr[usr.Id] = usr
 	}
 
-	err := json.NewEncoder(db).Encode(usrArr)
+	db.data = usrArr
+	err := db.Save()
 	if err != nil {
 		return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
 	}
-	db.data = usrArr
 	return nil
 }
 
-func (db *FileDB) GetLast() (uint64, error) {
-	return db.data[len(db.data)-1].Id, nil
+func (db *FileDB) GetLen() (uint64, error) {
+	return uint64(len(db.data)), nil
 }

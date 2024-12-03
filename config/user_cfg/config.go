@@ -36,7 +36,7 @@ func (u User) String() string {
 }
 
 // Creates a new user
-func NewUser(name string, password string, last_user uint64) (*User, error) {
+func NewUser(name string, password string, id uint64) (*User, error) {
 	if ok := validName(name); !ok {
 		return nil, vanerrors.NewSimple(InvalidName, fmt.Sprintf("name %s has not allowed symbols", name))
 	}
@@ -48,7 +48,7 @@ func NewUser(name string, password string, last_user uint64) (*User, error) {
 		return nil, err
 	}
 	return &User{
-		Id:           last_user + 1,
+		Id:           id,
 		Name:         name,
 		Password:     hashed_password,
 		SolidBalance: 0,
