@@ -8,14 +8,17 @@ import (
 	"github.com/VandiKond/vanerrors"
 )
 
+// The errors
 const (
-	InvalidQuery = "invalid query" // invalid query
+	InvalidQuery = "invalid query"
 )
 
-type UserPart int
+// The user field id
+type UserField int
 
+// The user fields ids using iota
 const (
-	ID UserPart = iota
+	ID UserField = iota
 	NAME
 	PASSWORD
 	SOLID_BALANCE
@@ -25,7 +28,8 @@ const (
 	CREATED_AT
 )
 
-var StringUserPart = map[UserPart]string{
+// The map for string values of fields
+var StringUserField = map[UserField]string{
 	ID:            "id",
 	NAME:          "name",
 	PASSWORD:      "password",
@@ -36,129 +40,196 @@ var StringUserPart = map[UserPart]string{
 	CREATED_AT:    "created_at",
 }
 
+// the separator id
 type Separator int
 
+// The separator ids using iota
 const (
 	NOT_SEPARATOR Separator = iota
 	OR
 	AND
 )
 
+// The map for string values of separators
 var StringSeparator = map[Separator]string{
 	OR:  "OR",
 	AND: "AND",
 }
 
+// the sing id
 type Sing int
 
+// The sing ids using iota
 const (
 	EQUAL Sing = iota
 	MORE
 	LESS
 )
 
+// The map for string values of sings
 var StringSing = map[Sing]string{
 	EQUAL: "=",
 	MORE:  ">",
 	LESS:  "<",
 }
 
+// The settings of query
+//
+// Separator: Separator id
+// Type: UserField id
+// Sing: Sing id
+// Not: need to use not
+// Y: The compare value
 type QuerySetting struct {
 	Separator Separator `json:"separator"`
-	Type      UserPart  `json:"type"`
+	Type      UserField `json:"type"`
 	Sing      Sing      `json:"sing"`
 	Not       bool      `json:"not"`
 	Y         any       `json:"y"`
 }
 
+// The query setting slice, that represents a query
 type Query []QuerySetting
 
+// Runs the query
 func (q QuerySetting) Run(X any) bool {
+	// Sets the result
 	var res bool
+
+	// Switching by type
 	switch q.Type {
+	// Case of uint64 values
 	case ID, SOLID_BALANCE, STOCK_BALANCE:
+		// Converting x to uint64
 		uintX, ok := X.(uint64)
 		if !ok {
 			return false
 		}
+		// Converting y to uint64
 		uintY, ok := q.Y.(uint64)
 		if !ok {
 			return false
 		}
+
+		// Switching by sing
 		switch q.Sing {
+		// Checking equal
 		case EQUAL:
 			res = uintX == uintY
+		// Checking more
 		case MORE:
 			res = uintX > uintY
+		// Checking less
 		case LESS:
 			res = uintX < uintY
+		// In default
 		default:
 			return false
 		}
+	// Case of string values
 	case NAME, PASSWORD:
+		// Converting x to string
 		strX, ok := X.(string)
 		if !ok {
 			return false
 		}
+		// Converting y to string
 		strY, ok := q.Y.(string)
 		if !ok {
 			return false
 		}
+
+		// Switching by sing
 		switch q.Sing {
+		// Checking equal
 		case EQUAL:
 			res = strX == strY
+		// Checking more
 		case MORE:
 			res = strX > strY
+		// Checking less
 		case LESS:
 			res = strX < strY
+		// In default
 		default:
 			return false
 		}
+	// Case of boolean values
 	case IS_BLOCKED:
+		// Converting x to boolean
 		boolX, ok := X.(bool)
 		if !ok {
 			return false
 		}
+
+		// Converting y to boolean
 		boolY, ok := q.Y.(bool)
 		if !ok {
 			return false
 		}
+
+		// Switching by sing
 		switch q.Sing {
+		// Checking equal
 		case EQUAL:
 			res = boolX == boolY
+			// Checking more
 		case MORE:
 			res = boolX && !boolY
+			// Checking less
 		case LESS:
 			res = !boolX && boolY
+			// In default
 		default:
 			return false
 		}
+	// Case of time.Time values
 	case CREATED_AT, LAST_FARMING:
+		// Converting x to time.Time
 		timeX, ok := X.(time.Time)
 		if !ok {
 			return false
 		}
+
+		// Converting y to time.Time
 		timeY, ok := q.Y.(time.Time)
 		if !ok {
 			return false
 		}
+
+		// Switching by sing
 		switch q.Sing {
+		// Checking equal
 		case EQUAL:
 			res = timeX.Equal(timeY)
+			// Checking more
 		case MORE:
 			res = timeX.After(timeY)
+			// Checking less
 		case LESS:
 			res = timeX.Before(timeY)
+			// In default
 		default:
 			return false
 		}
 	}
+
+	// Checking not
+	/*
+		Note:
+		to create != use Equal + Not
+		to create >= use Less + Not
+		to create <= use More + Not
+	*/
 	if q.Not {
 		res = !res
 	}
+
 	return res
 }
 
+// Sorting the users by query
+// TODO : Write comments from this function
 func (query Query) Sort(users []user_cfg.User, num int) ([]user_cfg.User, error) {
 	if num == -1 {
 		num = len(users) - 1
@@ -247,7 +318,7 @@ func (query Query) String() string {
 	for _, qr := range query {
 		switch qr.Separator {
 		case NOT_SEPARATOR:
-			res += fmt.Sprintf("%s %s %v", StringUserPart[qr.Type], SignToString(qr.Sing, qr.Not), qr.Y)
+			res += fmt.Sprintf("%s %s %v", StringUserField[qr.Type], SignToString(qr.Sing, qr.Not), qr.Y)
 
 		case OR, AND:
 			res += " " + StringSeparator[qr.Separator] + " "

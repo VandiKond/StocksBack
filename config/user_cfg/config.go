@@ -28,26 +28,35 @@ type User struct {
 }
 
 // Sets the user to string
-func (u User) String() string {
+func (u *User) String() string {
+	// Adding block prefix
 	var blocked string
 	if u.IsBlocked {
 		blocked = "[BLOCKED] "
 	}
+
+	// Returning the user data
 	return fmt.Sprintf("%suser %d (%s). balance: solids - %d, stocks - %d. Created at: %s", blocked, u.Id, u.Name, u.SolidBalance, u.StockBalance, u.CreatedAt.Format("01.02.2006 15:04:05"))
 }
 
 // Creates a new user
 func NewUser(name string, password string, id uint64) (*User, error) {
+	// Checking the name
 	if ok := validName(name); !ok {
 		return nil, vanerrors.NewSimple(InvalidName, fmt.Sprintf("name %s has not allowed symbols", name))
 	}
+
+	// Checks the password
 	if ok := validPassword(password); !ok {
 		return nil, vanerrors.NewSimple(InvalidPassword, fmt.Sprintf("password %s has not allowed symbols", password))
 	}
+
+	// Hash password
 	hashed_password, err := hash.HashPassword(password)
 	if err != nil {
 		return nil, err
 	}
+
 	return &User{
 		Id:           id,
 		Name:         name,
@@ -59,6 +68,26 @@ func NewUser(name string, password string, id uint64) (*User, error) {
 	}, nil
 }
 
+// Updates the password
+func (u *User) NewPassword(password string) error {
+	// Checks the password
+	if ok := validPassword(password); !ok {
+		return vanerrors.NewSimple(InvalidPassword, fmt.Sprintf("password %s has not allowed symbols", password))
+	}
+
+	// Hash password
+	hashed_password, err := hash.HashPassword(password)
+	if err != nil {
+		return err
+	}
+
+	// Updating the password
+	u.Password = hashed_password
+
+	return nil
+}
+
+// valid name
 func validName(name string) bool {
 	matched, err := regexp.MatchString(`^[a-zA-Z0-9 _-]*$`, name)
 	if err != nil {
@@ -67,6 +96,7 @@ func validName(name string) bool {
 	return matched
 }
 
+// valid password
 func validPassword(password string) bool {
 	matched, err := regexp.MatchString(`^[a-zA-Z0-9!#$*_&-]*$`, password)
 	if err != nil {
@@ -75,11 +105,13 @@ func validPassword(password string) bool {
 	return matched
 }
 
-func (u User) Valid() bool {
-	return validPassword(u.Password) && validName(u.Name)
+// Checks if the user valid
+func (u *User) Valid() bool {
+	return validName(u.Name)
 }
 
-func (u User) CheckPassword(password string) bool {
+// comperes password
+func (u *User) CheckPassword(password string) bool {
 	ok, err := hash.CompareHash(password, u.Password)
 	return ok && err == nil
 }

@@ -1,11 +1,11 @@
 port : 8080
 
 database :
-  host : "nothing"
+  host : ""
   port : 5432
   username : "postgres"
   password : "12345"
-  name : "users"
+  name : "users.json"
 
 salt : "nya_nya UwU :D :B"
 

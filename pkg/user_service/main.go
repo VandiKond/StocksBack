@@ -155,7 +155,7 @@ func UpdatePassword(id uint64, password string, db db_cfg.DataBase) (*user_cfg.U
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
-	usr.Password = password
+	usr.NewPassword(password)
 	if !usr.Valid() {
 		return usr, vanerrors.NewSimple(InvalidUser)
 	}

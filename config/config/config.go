@@ -7,39 +7,42 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type Config interface {
-	GetDBConData() DBCfg
-}
+// The errors
+const (
+	ErrorReadingConfig      = "error reading config"
+	ErrorUnmarshalingConfig = "error unmarshaling config"
+)
 
-type DBCfg struct {
+// The database connection config
+type DatabaseCfg struct {
 	Host     string `yaml:"host"`
 	Port     string `yaml:"port"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
+	Name     string `yaml:"name"`
 }
 
-type StdCfg struct {
-	Port     string `yaml:"port"`
-	Database DBCfg  `yaml:"database"`
-	Salt     string `yaml:"salt"`
+// The standard config
+type StandardCfg struct {
+	Port     string      `yaml:"port"`
+	Database DatabaseCfg `yaml:"database"`
+	Salt     string      `yaml:"salt"`
 }
 
-func (cfg StdCfg) GetDBConData() DBCfg {
-	return cfg.Database
-}
-
-func LoadConfig(path string) (*StdCfg, error) {
-	var config StdCfg
-
+// Loads config from the yaml file
+func LoadConfig(path string) (*StandardCfg, error) {
+	// Getting the config data
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, vanerrors.NewWrap("error reading config file", err, vanerrors.EmptyHandler)
+		return nil, vanerrors.NewWrap(ErrorReadingConfig, err, vanerrors.EmptyHandler)
 
 	}
 
+	// unmarshal the config
+	var config StandardCfg
 	err = yaml.Unmarshal(data, &config)
 	if err != nil {
-		return nil, vanerrors.NewWrap("error unmarshaling config file", err, vanerrors.EmptyHandler)
+		return nil, vanerrors.NewWrap(ErrorUnmarshalingConfig, err, vanerrors.EmptyHandler)
 	}
 
 	return &config, nil
