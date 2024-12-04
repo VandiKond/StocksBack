@@ -23,6 +23,7 @@ type User struct {
 	SolidBalance uint64    `json:"solid_balance"`
 	StockBalance uint64    `json:"stock_balance"`
 	IsBlocked    bool      `json:"is_blocked"`
+	LastFarming  time.Time `json:"last_farming"`
 	CreatedAt    time.Time `json:"created_at"`
 }
 
@@ -72,4 +73,13 @@ func validPassword(password string) bool {
 		return false
 	}
 	return matched
+}
+
+func (u User) Valid() bool {
+	return validPassword(u.Password) && validName(u.Name)
+}
+
+func (u User) CheckPassword(password string) bool {
+	ok, err := hash.CompareHash(password, u.Password)
+	return ok && err == nil
 }

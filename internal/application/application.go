@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/VandiKond/StocksBack/config/config"
-	"github.com/VandiKond/StocksBack/config/user_cfg"
 	"github.com/VandiKond/StocksBack/pkg/file_db"
 	"github.com/VandiKond/StocksBack/pkg/hash"
+	"github.com/VandiKond/StocksBack/pkg/user_service"
 )
 
 type Application struct {
@@ -52,15 +52,28 @@ func (a *Application) Run() error {
 	if err != nil {
 		panic(err)
 	}
-	length, err := db.GetLen()
-	if err != nil {
-		panic(err)
-	}
-	usr, err := user_cfg.NewUser("usr", "pass", length)
-	if err != nil {
-		panic(err)
-	}
-	db.NewUser(*usr)
+	// length, err := db.GetLen()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// usr, err := user_cfg.NewUser("usr1", "pass", length)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// usr.StockBalance = 15
+	// db.NewUser(*usr)
+	// length, err = db.GetLen()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// usr2, err := user_cfg.NewUser("usr2", "pass", length)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// usr2.StockBalance = 30
+	// db.NewUser(*usr2)
+
+	fmt.Println(user_service.StockUpdate(db))
 
 	// The program end
 
