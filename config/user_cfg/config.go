@@ -28,7 +28,7 @@ type User struct {
 }
 
 // Sets the user to string
-func (u *User) String() string {
+func (u User) String() string {
 	// Adding block prefix
 	var blocked string
 	if u.IsBlocked {
@@ -106,12 +106,12 @@ func validPassword(password string) bool {
 }
 
 // Checks if the user valid
-func (u *User) Valid() bool {
+func (u User) Valid() bool {
 	return validName(u.Name)
 }
 
 // comperes password
-func (u *User) CheckPassword(password string) bool {
+func (u User) CheckPassword(password string) bool {
 	ok, err := hash.CompareHash(password, u.Password)
 	return ok && err == nil
 }

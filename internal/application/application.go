@@ -2,27 +2,28 @@ package application
 
 import (
 	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"time"
 
 	"github.com/VandiKond/StocksBack/config/config"
+	"github.com/VandiKond/StocksBack/internal/server"
 	"github.com/VandiKond/StocksBack/pkg/file_db"
 	"github.com/VandiKond/StocksBack/pkg/hash"
-	"github.com/VandiKond/StocksBack/pkg/user_service"
+	"github.com/VandiKond/StocksBack/pkg/logger"
 )
 
 // Thr application program
 type Application struct {
 	Duration  time.Duration
 	IsService bool
+	Logger    logger.Logger
 }
 
 // Creates a new service application
 func NewService() *Application {
 	return &Application{
 		IsService: true,
+		Logger:    logger.NewStd(os.Stderr),
 	}
 }
 
@@ -30,13 +31,14 @@ func NewService() *Application {
 func New(d time.Duration) *Application {
 	return &Application{
 		Duration: d,
+		Logger:   logger.NewStd(os.Stderr),
 	}
 }
 
 // Runs the application
 func (a *Application) Run() error {
 	// Exiting in duration
-	defer log.Printf("application stopped before timeout")
+	defer a.Logger.Fatalln("application stopped before timeout")
 	go a.ExitTimeOut()
 
 	// The program
@@ -46,7 +48,7 @@ func (a *Application) Run() error {
 	// Loading config
 	cfg, err := config.LoadConfig("config/config.yml")
 	if err != nil {
-		panic(err)
+		a.Logger.Fatalln(err)
 	}
 
 	// Setting salt
@@ -55,43 +57,18 @@ func (a *Application) Run() error {
 	// Creating the data base
 	db, err := file_db.NewFileDB(cfg.Database.Name)
 	if err != nil {
-		panic(err)
+		a.Logger.Fatalln(err)
 	}
 	defer db.Close()
 	// Creating the tables
 	err = db.Create()
 	if err != nil {
-		panic(err)
+		a.Logger.Fatalln(err)
 	}
+	server := server.NewServer(a.Logger, db)
+	server.Run(cfg.Port)
 
-	// The loading part exit
-
-	// Creating test users
-
-	// length, err := db.GetLen()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// usr, err := user_cfg.NewUser("usr1", "pass", length)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// usr.StockBalance = 15
-	// db.NewUser(*usr)
-	// length, err = db.GetLen()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// usr2, err := user_cfg.NewUser("usr2", "pass", length)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// usr2.StockBalance = 30
-	// db.NewUser(*usr2)
-
-	// Updating stocks
-	fmt.Println(user_service.StockUpdate(db))
-
+	
 	// The program end
 
 	// Returning without error
@@ -110,6 +87,5 @@ func (a *Application) ExitTimeOut() {
 
 	// Exiting after timeout
 	fmt.Println("")
-	log.Printf("timeout %s has passed. Ending the program", a.Duration)
-	os.Exit(http.StatusTeapot)
+	a.Logger.Fatalf("timeout %s has passed. Ending the program", a.Duration)
 }

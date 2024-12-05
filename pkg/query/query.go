@@ -229,100 +229,153 @@ func (q QuerySetting) Run(X any) bool {
 }
 
 // Sorting the users by query
-// TODO : Write comments from this function
 func (query Query) Sort(users []user_cfg.User, num int) ([]user_cfg.User, error) {
-	if num == -1 {
+	// If num is less than zero it sets to max value
+	if num < 0 {
 		num = len(users) - 1
 	}
+
+	// Setting the result
 	var res []user_cfg.User
 
 	for _, u := range users {
+		// Setting do append and current separator
 		var do_append bool
 		var cur_separator Separator = OR
 
 		for _, qr := range query {
+			// Going through separators
 			switch qr.Separator {
+
 			case NOT_SEPARATOR:
+				// Setting is true
 				var is_true bool
+
 				switch qr.Type {
+
 				case ID:
+					// Running id
 					is_true = qr.Run(u.Id)
+
 				case NAME:
+					// Running name
 					is_true = qr.Run(u.Name)
+
 				case PASSWORD:
+					// Running password
 					is_true = qr.Run(u.Password)
+
 				case SOLID_BALANCE:
+					// Running solid balance
 					is_true = qr.Run(u.SolidBalance)
+
 				case STOCK_BALANCE:
+					// Running stock balance
 					is_true = qr.Run(u.StockBalance)
+
 				case IS_BLOCKED:
+					// Running is blocked
 					is_true = qr.Run(u.IsBlocked)
+
 				case LAST_FARMING:
+					// Running last farming
 					is_true = qr.Run(u.LastFarming)
 				case CREATED_AT:
+					// Running created at
 					is_true = qr.Run(u.CreatedAt)
+
 				default:
+					// Returning error
 					return nil, vanerrors.NewSimple(InvalidQuery, "invalid type")
 				}
 
+				// Editing do append
 				switch cur_separator {
+
 				case OR:
 					do_append = do_append || is_true
+
 				case AND:
 					do_append = do_append && is_true
+
 				default:
+					// Returning error
 					return nil, vanerrors.NewSimple(InvalidQuery, "invalid order")
 				}
 
 			case OR, AND:
+
+				// Checking the order
 				if cur_separator != NOT_SEPARATOR {
 					return nil, vanerrors.NewSimple(InvalidQuery, "invalid order")
 				}
+
+			default:
+				// Returning error
+				return nil, vanerrors.NewSimple(InvalidQuery, "invalid order")
 			}
 
+			// Setting current separator
 			cur_separator = qr.Separator
 		}
 
+		// Checking the order
 		if cur_separator != NOT_SEPARATOR {
 			return nil, vanerrors.NewSimple(InvalidQuery, "invalid order")
 		}
 
+		// Appending user
 		if do_append {
 			res = append(res, u)
 		}
 
+		// Checking the limit
 		if len(res) > num {
 			break
 		}
 	}
+
 	return res, nil
 }
 
+// Gets the string sing
 func SignToString(sing Sing, not bool) string {
 	if sing == EQUAL && not {
+		// !=
 		return "!" + StringSing[sing]
 	} else if sing == EQUAL && !not {
+		// ==
 		return StringSing[sing] + StringSing[sing]
 	} else if sing == MORE && not {
+		// <=
 		return StringSing[LESS] + "="
 	} else if sing == LESS && not {
+		// >=
 		return StringSing[MORE] + "="
 	} else {
+		// > and <
 		return StringSing[sing]
 	}
 }
 
+// Creates a string query
 func (query Query) String() string {
+	// Setting result as a string
 	var res string
 
 	for _, qr := range query {
+		// Separator switch
 		switch qr.Separator {
+
 		case NOT_SEPARATOR:
+			// Adding query setting expression
 			res += fmt.Sprintf("%s %s %v", StringUserField[qr.Type], SignToString(qr.Sing, qr.Not), qr.Y)
 
 		case OR, AND:
+			// Adding separator
 			res += " " + StringSeparator[qr.Separator] + " "
 		}
 	}
+
 	return res
 }
