@@ -2,6 +2,7 @@ package responses
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -26,8 +27,8 @@ func (e ErrorResponse) SendJson(w http.ResponseWriter, code int) error {
 	if err != nil {
 		return err
 	}
-	_, err = w.Write(b)
 	w.WriteHeader(code)
+	fmt.Fprint(w, string(b))
 	return err
 }
 

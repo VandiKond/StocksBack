@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/VandiKond/StocksBack/config/db_cfg"
+	"github.com/VandiKond/StocksBack/config/responses"
 	"github.com/VandiKond/StocksBack/pkg/logger"
 )
 
@@ -44,12 +45,16 @@ func NewServer(handler http.Handler, port int) *Server {
 
 // serve
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
 	fn, ok := h.funcs[r.URL.Path]
 	if !ok {
-		http.NotFound(w, r)
+		responses.ErrorResponse{
+			ErrorName: "not found",
+		}.
+			SendJson(w, http.StatusNotFound)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	fn(w, r)
 }
 

@@ -25,7 +25,7 @@ const (
 type HandlerFuncUser func(w http.ResponseWriter, r *http.Request, u user_cfg.User)
 
 // Sings in
-func (h Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
+func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Gets header
 		key := r.Header.Get("Key")
@@ -146,7 +146,7 @@ func (h Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 	}
 }
 
-func (h Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
+func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Checking method
 		if r.Method != method {

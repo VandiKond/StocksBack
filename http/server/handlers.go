@@ -39,7 +39,7 @@ func ToErrorResponse(err error) responses.ErrorResponse {
 }
 
 // It creates a new user
-func (h Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 	// Gets body
 	req := requests.SingUpRequest{}
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -86,7 +86,7 @@ func (h Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (h Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Farming
 	amount, usr, err := user_service.Farm(u.Id, h.db)
 
@@ -117,7 +117,7 @@ func (h Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.
 	})
 }
 
-func (h Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
 	var req requests.BuyStocksRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
