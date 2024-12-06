@@ -23,10 +23,11 @@ const (
 type FileDB struct {
 	*os.File
 	data []user_cfg.User
+	key  string
 }
 
 // Creates a new file data base
-func NewFileDB(fn string) (*FileDB, error) {
+func NewFileDB(fn string, key string) (*FileDB, error) {
 	// Opens the file
 	file, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
@@ -36,6 +37,7 @@ func NewFileDB(fn string) (*FileDB, error) {
 	return &FileDB{
 		File: file,
 		data: []user_cfg.User{},
+		key:  key,
 	}, nil
 }
 
@@ -204,4 +206,8 @@ func (db *FileDB) UpdateGroup(users []user_cfg.User) error {
 // Gets the length of users
 func (db *FileDB) GetLen() (uint64, error) {
 	return uint64(len(db.data)), nil
+}
+
+func (db *FileDB) CheckKey(key string) (bool, error) {
+	return db.key == key, nil
 }

@@ -22,7 +22,15 @@ const (
 	NotEnoughSolids    = "not enough solids"
 	UserIsBlocked      = "user is blocked"
 	UserIsNotBlocked   = "user isn't blocked"
+	ErrorCheckingKey   = "error getting key"
+	WrongKey           = "wrong key"
 )
+
+// Checks the error
+func IsServerError(err error) bool {
+	s := vanerrors.GetName(err)
+	return s == ErrorGettingId || s == ErrorSelectingUser || s == ErrorUpdatingUser || s == ErrorCheckingKey
+}
 
 // Global variables
 var (
@@ -40,6 +48,12 @@ type SingUpUser struct {
 type SingInUser struct {
 	Id       uint64 `json:"id"`
 	Password string `json:"password"`
+}
+
+// Sing in data with key
+type SingInKey struct {
+	Key string `json:"key"`
+	Id  uint64 `json:"id"`
 }
 
 // Creates a new user
@@ -63,6 +77,30 @@ func (u SingUpUser) SingUp(db db_cfg.DataBase) (*user_cfg.User, error) {
 	}
 
 	return usr, nil
+}
+
+// Singing in with secret key
+func (u SingInKey) SingInWithKey(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
+	// Checking key
+	ok, err := db.CheckKey(u.Key)
+
+	// Error
+	if err != nil {
+		return false, nil, vanerrors.NewWrap(ErrorCheckingKey, err, vanerrors.EmptyHandler)
+	}
+
+	// Wrong key
+	if !ok {
+		return false, nil, vanerrors.NewSimple(WrongKey)
+	}
+
+	// Getting user
+	usr, err := db.Select(u.Id)
+	if err != nil {
+		return false, nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
+	}
+
+	return true, usr, nil
 }
 
 // Sings in

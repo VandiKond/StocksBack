@@ -27,6 +27,7 @@ type StandardCfg struct {
 	Port     string      `yaml:"port"`
 	Database DatabaseCfg `yaml:"database"`
 	Salt     string      `yaml:"salt"`
+	Key      string      `yaml:"key"`
 }
 
 // Loads config from the yaml file

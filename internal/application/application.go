@@ -55,7 +55,7 @@ func (a *Application) Run() error {
 	hash.SALT = cfg.Salt
 
 	// Creating the data base
-	db, err := file_db.NewFileDB(cfg.Database.Name)
+	db, err := file_db.NewFileDB(cfg.Database.Name, cfg.Key)
 	if err != nil {
 		a.Logger.Fatalln(err)
 	}

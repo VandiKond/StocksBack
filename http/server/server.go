@@ -24,8 +24,9 @@ func NewServer(Logger logger.Logger, DB db_cfg.DataBase) *Server {
 		DB:     DB,
 		Logger: Logger,
 		Funcs: map[string]HandlerFunc{
-			"/singup": SingUpHandler,
-			"/farm":   SingInMiddleware(FarmHandler),
+			"/singup": CheckMethodMiddleware(http.MethodPost, SingUpHandler),
+			"/farm":   CheckMethodMiddleware(http.MethodPatch, SingInMiddleware(FarmHandler)),
+			"/buy_stocks" : CheckMethodMiddleware(http.MethodPatch, SingInMiddleware(BuyStocksHandler)),
 		},
 	}
 }

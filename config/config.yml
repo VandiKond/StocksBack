@@ -8,5 +8,5 @@ database :
   name : "users.json"
 
 salt : "nya_nya UwU :D :B"
-
+key : "secret key for data base"
   

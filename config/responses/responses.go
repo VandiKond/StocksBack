@@ -26,7 +26,7 @@ type SingUpResponseError struct {
 	ErrorResponse
 }
 
-type SingInError struct {
+type SingInResponseError struct {
 	ErrorResponse
 }
 

@@ -2,7 +2,6 @@ package server
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/VandiKond/StocksBack/config/db_cfg"
@@ -33,32 +32,15 @@ func ToResponseUser(usr user_cfg.User) responses.ResponseUser {
 }
 
 // Vanerror to response error
-func ToErrorResponse(err vanerrors.VanError) responses.ErrorResponse {
+func ToErrorResponse(err error) responses.ErrorResponse {
 	return responses.ErrorResponse{
-		ErrorName: err.Name,
-		Error:     err.Message,
+		ErrorName: vanerrors.GetName(err),
+		Error:     vanerrors.GetMessage(err),
 	}
 }
 
 // It creates a new user
 func SingUpHandler(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase) error {
-
-	// Checking method
-	if r.Method != http.MethodPost {
-		// Set status
-		w.WriteHeader(http.StatusBadRequest)
-
-		// Creates an error
-		resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s, allowed method %s", r.Method, http.MethodPost))
-
-		// Writes data
-		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		})
-
-		return err
-	}
-
 	// Gets body
 	req := requests.SingUpRequest{}
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -79,27 +61,21 @@ func SingUpHandler(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase) e
 	}
 
 	// Sings up
-	usr, err := req.User.SingUp(DB)
+	usr, err := req.SingUp(DB)
 
 	if err != nil {
-		// Gets error
-		resp := vanerrors.Get(err)
-		if resp == nil {
-			return err
-		}
-
 		// Checks error variants
-		if resp.Name == user_service.ErrorGettingId || resp.Name == user_service.ErrorUpdatingUser {
+		if user_service.IsServerError(err) {
 
 			w.WriteHeader(http.StatusInternalServerError)
-		} else if resp.Name == user_service.ErrorCreatingUser {
+		} else {
 
 			w.WriteHeader(http.StatusBadRequest)
 		}
 
 		// Writes data
 		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
-			ErrorResponse: ToErrorResponse(*resp),
+			ErrorResponse: ToErrorResponse(err),
 		})
 
 		return err
@@ -117,26 +93,22 @@ func SingUpHandler(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase) e
 }
 
 func FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_cfg.DataBase) error {
+	// Farming
 	amount, usr, err := user_service.Farm(u.Id, DB)
 
 	if err != nil {
-		// Gets error
-		resp := vanerrors.Get(err)
-		if resp == nil {
-			return err
-		}
-
 		// Checks error variants
-		if resp.Name == user_service.ErrorSelectingUser || resp.Name == user_service.ErrorUpdatingUser {
-			w.WriteHeader(http.StatusInternalServerError)
-		} else if resp.Name == user_service.ToEarlyFarming {
+		if user_service.IsServerError(err) {
 
-			w.WriteHeader(http.StatusTooManyRequests)
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+
+			w.WriteHeader(http.StatusBadRequest)
 		}
 
 		// Writes data
-		err := json.NewEncoder(w).Encode(responses.FarmResponseError{
-			ErrorResponse: ToErrorResponse(*resp),
+		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
+			ErrorResponse: ToErrorResponse(err),
 		})
 
 		return err
@@ -155,6 +127,53 @@ func FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_
 }
 
 func BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_cfg.DataBase) error {
+	// Gets body
+	var req requests.BuyStocksRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
 
-	return nil
+	if err != nil {
+		// Set status
+		w.WriteHeader(http.StatusBadRequest)
+
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidBody)
+
+		// Writes data
+		err := json.NewEncoder(w).Encode(responses.BlockResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		})
+
+		return err
+	}
+
+	// Buying stocks
+	usr, err := user_service.BuyStocks(u.Id, req.Num, DB)
+
+	if err != nil {
+		// Checks error variants
+		if user_service.IsServerError(err) {
+
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
+		// Writes data
+		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
+			ErrorResponse: ToErrorResponse(err),
+		})
+
+		return err
+	}
+
+	// Converts user
+	resp := ToResponseUser(*usr)
+
+	// Sends data
+	err = json.NewEncoder(w).Encode(responses.BuyStocksResponseOK{
+		User: resp,
+	})
+
+	return err
 }

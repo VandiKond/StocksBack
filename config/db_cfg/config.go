@@ -32,5 +32,6 @@ type DataBase interface {
 	Update(user_cfg.User) error
 	UpdateGroup([]user_cfg.User) error
 	GetLen() (uint64, error)
+	CheckKey(string) (bool, error)
 	io.Closer
 }
