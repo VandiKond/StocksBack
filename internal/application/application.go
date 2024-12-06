@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/VandiKond/StocksBack/config/config"
-	"github.com/VandiKond/StocksBack/internal/server"
+	"github.com/VandiKond/StocksBack/http/server"
 	"github.com/VandiKond/StocksBack/pkg/file_db"
 	"github.com/VandiKond/StocksBack/pkg/hash"
 	"github.com/VandiKond/StocksBack/pkg/logger"
@@ -68,7 +68,6 @@ func (a *Application) Run() error {
 	server := server.NewServer(a.Logger, db)
 	server.Run(cfg.Port)
 
-	
 	// The program end
 
 	// Returning without error

@@ -153,3 +153,8 @@ func FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_
 
 	return err
 }
+
+func BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_cfg.DataBase) error {
+
+	return nil
+}
