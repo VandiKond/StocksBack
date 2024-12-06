@@ -114,10 +114,10 @@ func (u SingInUser) SingIn(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
 	// Checks the password
 	ok := usr.CheckPassword(u.Password)
 	if ok {
-		return ok, usr, nil
+		return true, usr, nil
 	}
 
-	return ok, nil, nil
+	return false, nil, nil
 }
 
 // Farms

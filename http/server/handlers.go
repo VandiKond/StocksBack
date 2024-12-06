@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/VandiKond/StocksBack/config/db_cfg"
 	"github.com/VandiKond/StocksBack/config/requests"
 	"github.com/VandiKond/StocksBack/config/responses"
 	"github.com/VandiKond/StocksBack/config/user_cfg"
@@ -40,140 +39,125 @@ func ToErrorResponse(err error) responses.ErrorResponse {
 }
 
 // It creates a new user
-func SingUpHandler(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase) error {
+func (h Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 	// Gets body
 	req := requests.SingUpRequest{}
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-		// Set status
-		w.WriteHeader(http.StatusBadRequest)
 
 		// Creates an error
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
+		responses.SingUpResponseError{
 			ErrorResponse: ToErrorResponse(resp),
-		})
-
-		return err
+		}.
+			SendJson(w, http.StatusBadRequest)
+		return
 	}
 
 	// Sings up
-	usr, err := req.SingUp(DB)
+	usr, err := req.SingUp(h.db)
 
 	if err != nil {
+
 		// Checks error variants
+		var status = http.StatusBadRequest
 		if user_service.IsServerError(err) {
 
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-
-			w.WriteHeader(http.StatusBadRequest)
+			status = http.StatusInternalServerError
 		}
 
 		// Writes data
-		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
+		responses.SingUpResponseError{
 			ErrorResponse: ToErrorResponse(err),
-		})
-
-		return err
+		}.
+			SendJson(w, status)
+		return
 	}
 
 	// Converts user
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	err = json.NewEncoder(w).Encode(responses.SingUpResponseOK{
+	json.NewEncoder(w).Encode(responses.SingUpResponseOK{
 		User: resp,
 	})
-
-	return err
 }
 
-func FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_cfg.DataBase) error {
+func (h Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Farming
-	amount, usr, err := user_service.Farm(u.Id, DB)
+	amount, usr, err := user_service.Farm(u.Id, h.db)
 
 	if err != nil {
 		// Checks error variants
+		var status = http.StatusBadRequest
 		if user_service.IsServerError(err) {
 
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-
-			w.WriteHeader(http.StatusBadRequest)
+			status = http.StatusInternalServerError
 		}
 
 		// Writes data
-		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
+		responses.SingUpResponseError{
 			ErrorResponse: ToErrorResponse(err),
-		})
+		}.
+			SendJson(w, status)
 
-		return err
+		return
 	}
 
 	// Converts user
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	err = json.NewEncoder(w).Encode(responses.FarmResponseOK{
+	json.NewEncoder(w).Encode(responses.FarmResponseOK{
 		User:   resp,
 		Amount: amount,
 	})
-
-	return err
 }
 
-func BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User, DB db_cfg.DataBase) error {
+func (h Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
 	var req requests.BuyStocksRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-		// Set status
-		w.WriteHeader(http.StatusBadRequest)
 
 		// Creates an error
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		err := json.NewEncoder(w).Encode(responses.BlockResponseError{
+		responses.BlockResponseError{
 			ErrorResponse: ToErrorResponse(resp),
-		})
-
-		return err
+		}.
+			SendJson(w, http.StatusBadRequest)
+		return
 	}
 
 	// Buying stocks
-	usr, err := user_service.BuyStocks(u.Id, req.Num, DB)
+	usr, err := user_service.BuyStocks(u.Id, req.Num, h.db)
 
 	if err != nil {
 		// Checks error variants
+		var status = http.StatusBadRequest
 		if user_service.IsServerError(err) {
 
-			w.WriteHeader(http.StatusInternalServerError)
-		} else {
-
-			w.WriteHeader(http.StatusBadRequest)
+			status = http.StatusInternalServerError
 		}
-
 		// Writes data
-		err := json.NewEncoder(w).Encode(responses.SingUpResponseError{
+		responses.SingUpResponseError{
 			ErrorResponse: ToErrorResponse(err),
-		})
-
-		return err
+		}.
+			SendJson(w, status)
+		return
 	}
 
 	// Converts user
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	err = json.NewEncoder(w).Encode(responses.BuyStocksResponseOK{
+	json.NewEncoder(w).Encode(responses.BuyStocksResponseOK{
 		User: resp,
 	})
-
-	return err
 }

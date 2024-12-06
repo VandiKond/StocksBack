@@ -2,6 +2,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/VandiKond/StocksBack/config/db_cfg"
@@ -9,39 +10,51 @@ import (
 )
 
 // The handler func
-type HandlerFunc func(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase) error
+type HandlerFunc func(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase) int
+
+// The handler
+type Handler struct {
+	logger logger.Logger
+	db     db_cfg.DataBase
+	funcs  map[string]http.HandlerFunc
+}
+
+func NewHandler(db db_cfg.DataBase, logger logger.Logger) *Handler {
+	handler := Handler{
+		logger: logger,
+		db:     db,
+	}
+	handler.funcs = map[string]http.HandlerFunc{
+		"/singup":     handler.CheckMethodMiddleware(http.MethodPost, handler.SingUpHandler),
+		"/farm":       handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.FarmHandler)),
+		"/buy_stocks": handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BuyStocksHandler)),
+	}
+	return &handler
+}
 
 // The server
 type Server struct {
-	DB     db_cfg.DataBase
-	Logger logger.Logger
-	Funcs  map[string]HandlerFunc
+	http.Server
 }
 
 // Creates a new server
-func NewServer(Logger logger.Logger, DB db_cfg.DataBase) *Server {
-	return &Server{
-		DB:     DB,
-		Logger: Logger,
-		Funcs: map[string]HandlerFunc{
-			"/singup": CheckMethodMiddleware(http.MethodPost, SingUpHandler),
-			"/farm":   CheckMethodMiddleware(http.MethodPatch, SingInMiddleware(FarmHandler)),
-			"/buy_stocks" : CheckMethodMiddleware(http.MethodPatch, SingInMiddleware(BuyStocksHandler)),
-		},
-	}
+func NewServer(handler http.Handler, port int) *Server {
+	return &Server{http.Server{Addr: fmt.Sprint(":", port), Handler: handler}}
 }
 
 // serve
-func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fn, ok := s.Funcs[r.URL.Path]
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	fn, ok := h.funcs[r.URL.Path]
 	if !ok {
 		http.NotFound(w, r)
 		return
 	}
-	fn(w, r, s.DB)
+	w.Header().Set("Content-Type", "application/json")
+	fn(w, r)
 }
 
 // Runs server
-func (s *Server) Run(port string) {
-	http.ListenAndServe(":"+port, s)
+func (s *Server) Run() error {
+	err := s.ListenAndServe()
+	return err
 }

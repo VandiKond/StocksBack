@@ -65,8 +65,10 @@ func (a *Application) Run() error {
 	if err != nil {
 		a.Logger.Fatalln(err)
 	}
-	server := server.NewServer(a.Logger, db)
-	server.Run(cfg.Port)
+
+	handler := server.NewHandler(db, a.Logger)
+	server := server.NewServer(handler, cfg.Port)
+	server.Run()
 
 	// The program end
 

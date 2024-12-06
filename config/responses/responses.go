@@ -1,6 +1,8 @@
 package responses
 
 import (
+	"encoding/json"
+	"net/http"
 	"time"
 )
 
@@ -14,14 +16,25 @@ type ResponseUser struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
-type SingUpResponseOK struct {
-	User ResponseUser `json:"user"`
-}
-
 type ErrorResponse struct {
 	ErrorName string `json:"error_name"`
 	Error     string `json:"error"`
 }
+
+func (e ErrorResponse) SendJson(w http.ResponseWriter, code int) error {
+	b, err := json.Marshal(e)
+	if err != nil {
+		return err
+	}
+	_, err = w.Write(b)
+	w.WriteHeader(code)
+	return err
+}
+
+type SingUpResponseOK struct {
+	User ResponseUser `json:"user"`
+}
+
 type SingUpResponseError struct {
 	ErrorResponse
 }

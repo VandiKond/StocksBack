@@ -16,7 +16,7 @@ const (
 // The database connection config
 type DatabaseCfg struct {
 	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
+	Port     int    `yaml:"port"`
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	Name     string `yaml:"name"`
@@ -24,7 +24,7 @@ type DatabaseCfg struct {
 
 // The standard config
 type StandardCfg struct {
-	Port     string      `yaml:"port"`
+	Port     int         `yaml:"port"`
 	Database DatabaseCfg `yaml:"database"`
 	Salt     string      `yaml:"salt"`
 	Key      string      `yaml:"key"`
