@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/VandiKond/StocksBack/config/config"
@@ -23,7 +22,7 @@ type Application struct {
 func NewService() *Application {
 	return &Application{
 		IsService: true,
-		Logger:    logger.NewStd(os.Stderr),
+		Logger:    logger.New(),
 	}
 }
 
@@ -31,7 +30,7 @@ func NewService() *Application {
 func New(d time.Duration) *Application {
 	return &Application{
 		Duration: d,
-		Logger:   logger.NewStd(os.Stderr),
+		Logger:   logger.New(),
 	}
 }
 

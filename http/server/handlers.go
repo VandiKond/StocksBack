@@ -54,6 +54,7 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorResponse: ToErrorResponse(resp),
 		}.
 			SendJson(w, http.StatusBadRequest)
+
 		return
 	}
 
@@ -74,6 +75,8 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("unable to sing up, reason: %v", err)
 		return
 	}
 
@@ -84,6 +87,8 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(responses.SingUpResponseOK{
 		User: resp,
 	})
+
+	h.logger.Printf("sing up: %v", *usr)
 }
 
 // Farms
@@ -98,7 +103,6 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 
 			status = http.StatusInternalServerError
 		}
-
 		// Writes data
 		responses.SingUpResponseError{
 			ErrorResponse: ToErrorResponse(err),
@@ -116,6 +120,8 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 		User:   resp,
 		Amount: amount,
 	})
+
+	h.logger.Printf("farm (%d) : %v", amount, *usr)
 }
 
 // Buy stocks
@@ -134,6 +140,7 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 			ErrorResponse: ToErrorResponse(resp),
 		}.
 			SendJson(w, http.StatusBadRequest)
+
 		return
 	}
 
@@ -152,6 +159,9 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("%v unable to buy stocks, reason: %v", u, err)
+
 		return
 	}
 
@@ -162,6 +172,8 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 	json.NewEncoder(w).Encode(responses.BuyStocksResponseOK{
 		User: resp,
 	})
+
+	h.logger.Printf("buy stocks (%d) : %v", req.Num, *usr)
 }
 
 // Update name
@@ -180,6 +192,7 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 			ErrorResponse: ToErrorResponse(resp),
 		}.
 			SendJson(w, http.StatusBadRequest)
+
 		return
 	}
 
@@ -197,6 +210,9 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("%v unable to update name, reason: %v", u, err)
+
 		return
 	}
 
@@ -207,6 +223,9 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 	json.NewEncoder(w).Encode(responses.UpdateNameResponseOK{
 		User: resp,
 	})
+
+	h.logger.Printf("update name (was %s) : %v", u.Name, *usr)
+
 }
 
 // Update password
@@ -242,6 +261,9 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("%v unable to update password, reason: %v", u, err)
+
 		return
 	}
 
@@ -252,6 +274,8 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 	json.NewEncoder(w).Encode(responses.UpdatePasswordResponseOK{
 		User: resp,
 	})
+
+	h.logger.Printf("update password: %v", u.Name, *usr)
 }
 
 // Block user
@@ -261,7 +285,6 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
-
 		// Creates an error
 		resp := vanerrors.NewSimple(InvalidBody)
 
@@ -270,6 +293,7 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 			ErrorResponse: ToErrorResponse(resp),
 		}.
 			SendJson(w, http.StatusBadRequest)
+
 		return
 	}
 
@@ -287,6 +311,9 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("%v unable to block, reason: %v", u, err)
+
 		return
 	}
 
@@ -297,6 +324,8 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 	json.NewEncoder(w).Encode(responses.BlockResponseOK{
 		User: resp,
 	})
+
+	h.logger.Printf("block: %v", u.Name, *usr)
 }
 
 // Unlock user
@@ -332,6 +361,9 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("%v unable to unblock, reason: %v", u, err)
+
 		return
 	}
 
@@ -342,4 +374,6 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 	json.NewEncoder(w).Encode(responses.UnblockResponseOK{
 		User: resp,
 	})
+
+	h.logger.Printf("unblock: %v", u.Name, *usr)
 }

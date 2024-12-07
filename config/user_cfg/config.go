@@ -36,7 +36,7 @@ func (u User) String() string {
 	}
 
 	// Returning the user data
-	return fmt.Sprintf("%suser %d (%s). balance: solids - %d, stocks - %d. Created at: %s", blocked, u.Id, u.Name, u.SolidBalance, u.StockBalance, u.CreatedAt.Format("01.02.2006 15:04:05"))
+	return fmt.Sprintf("%suser %d (%s). balance: solids - %d, stocks - %d", blocked, u.Id, u.Name, u.SolidBalance, u.StockBalance)
 }
 
 // Creates a new user

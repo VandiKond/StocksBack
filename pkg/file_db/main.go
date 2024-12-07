@@ -157,7 +157,7 @@ func (db *FileDB) Update(usr user_cfg.User) error {
 	usrArr := db.data
 
 	// Checks the if the id is valid
-	if len(usrArr) >= int(usr.Id) {
+	if len(usrArr) <= int(usr.Id) {
 		return vanerrors.NewSimple(InvalidId)
 	}
 
@@ -184,7 +184,7 @@ func (db *FileDB) UpdateGroup(users []user_cfg.User) error {
 	// Checks all users
 	for _, usr := range users {
 		// Checks the if the id is valid
-		if len(usrArr) < int(usr.Id) {
+		if len(usrArr) <= int(usr.Id) {
 			return vanerrors.NewSimple(InvalidId)
 		}
 		// Updates the user

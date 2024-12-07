@@ -10,6 +10,12 @@ import (
 	"github.com/VandiKond/vanerrors/vanstack"
 )
 
+// The file names
+const (
+	INFO_a_WARN   string = "logs/info.txt"
+	ERROR_a_FATAL        = "logs/error.txt"
+)
+
 // The errors
 const ()
 
@@ -46,34 +52,22 @@ type Logger struct {
 	levelMap map[LogLevel]string
 }
 
-// Creates a standard logger
-func NewStd(w io.Writer) Logger {
-	return Logger{
-		wInfo:    w,
-		wWarn:    w,
-		wError:   w,
-		wFatal:   w,
-		levelMap: StringLogLevel,
+// Creates a logger with pairs
+func New() Logger {
+	wIaW, err := os.OpenFile(INFO_a_WARN, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
 	}
-}
-
-// Logger data
-type LoggerData struct {
-	WInfo    io.Writer
-	WWarn    io.Writer
-	WError   io.Writer
-	WFatal   io.Writer
-	LevelMap map[LogLevel]string
-}
-
-// Creates a new logger
-func New(d LoggerData) Logger {
+	wEaF, err := os.OpenFile(ERROR_a_FATAL, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0666)
+	if err != nil {
+		panic(err)
+	}
 	return Logger{
-		wInfo:    d.WInfo,
-		wWarn:    d.WWarn,
-		wError:   d.WError,
-		wFatal:   d.WFatal,
-		levelMap: d.LevelMap,
+		wInfo:    wIaW,
+		wWarn:    wIaW,
+		wError:   wEaF,
+		wFatal:   wEaF,
+		levelMap: StringLogLevel,
 	}
 }
 
@@ -82,7 +76,8 @@ func writeln(w io.Writer, prefix string, a []any) {
 }
 
 func writef(w io.Writer, prefix string, format string, a []any) {
-	fmt.Fprintf(w, "%s %s "+format+"\n", append([]any{prefix, time.Now().Format(FORMAT)}, a...)...)
+	format = "%s %s " + format + "\n"
+	fmt.Fprintf(w, format, append([]any{prefix, time.Now().Format(FORMAT)}, a...)...)
 }
 
 // Prints a line
