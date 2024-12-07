@@ -94,7 +94,7 @@ type UnblockResponseOK struct {
 	User ResponseUser `json:"user"`
 }
 
-type UnlockResponseError struct {
+type UnblockResponseError struct {
 	User ResponseUser `json:"user"`
 	ErrorResponse
 }

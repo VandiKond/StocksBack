@@ -22,4 +22,4 @@ type UpdatePasswordRequest struct {
 
 type BlockRequest struct{}
 
-type UnlockRequest struct{}
+type UnblockRequest struct{}

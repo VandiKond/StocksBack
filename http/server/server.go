@@ -20,16 +20,32 @@ type Handler struct {
 	funcs  map[string]http.HandlerFunc
 }
 
+// Created a new handler
 func NewHandler(db db_cfg.DataBase, logger logger.Logger) *Handler {
+	// Creating handler
 	handler := Handler{
 		logger: logger,
 		db:     db,
 	}
+
+	// Adding functions
 	handler.funcs = map[string]http.HandlerFunc{
-		"/singup":     handler.CheckMethodMiddleware(http.MethodPost, handler.SingUpHandler),
-		"/farm":       handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.FarmHandler)),
+		// Sing uo
+		"/singup": handler.CheckMethodMiddleware(http.MethodPost, handler.SingUpHandler),
+
+		// Stocks and solids
 		"/buy_stocks": handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BuyStocksHandler)),
+		"/farm":       handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.FarmHandler)),
+
+		// Name and password
+		"/upd_name":     handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdateNameHandler)),
+		"/upd_password": handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdatePasswordHandler)),
+
+		// Block
+		"/block":   handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BlockHandler)),
+		"/unblock": handler.CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UnblockHandler)),
 	}
+
 	return &handler
 }
 
@@ -43,18 +59,25 @@ func NewServer(handler http.Handler, port int) *Server {
 	return &Server{http.Server{Addr: fmt.Sprint(":", port), Handler: handler}}
 }
 
-// serve
+// Serve
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// The header
 	w.Header().Add("Content-Type", "application/json")
 
+	// Gets the handler func
 	fn, ok := h.funcs[r.URL.Path]
 	if !ok {
+
+		// Not found
 		responses.ErrorResponse{
 			ErrorName: "not found",
 		}.
 			SendJson(w, http.StatusNotFound)
+
 		return
 	}
+
+	// Runs the handler
 	fn(w, r)
 }
 

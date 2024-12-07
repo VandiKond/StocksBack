@@ -146,6 +146,7 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 	}
 }
 
+// Checks the method
 func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Checking method

@@ -86,6 +86,7 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Farms
 func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Farming
 	amount, usr, err := user_service.Farm(u.Id, h.db)
@@ -117,6 +118,7 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 	})
 }
 
+// Buy stocks
 func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
 	var req requests.BuyStocksRequest
@@ -128,7 +130,7 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.BlockResponseError{
+		responses.BuyStocksResponseError{
 			ErrorResponse: ToErrorResponse(resp),
 		}.
 			SendJson(w, http.StatusBadRequest)
@@ -146,7 +148,7 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.SingUpResponseError{
+		responses.BuyStocksResponseError{
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
@@ -158,6 +160,186 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 
 	// Sends data
 	json.NewEncoder(w).Encode(responses.BuyStocksResponseOK{
+		User: resp,
+	})
+}
+
+// Update name
+func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+	// Gets body
+	var req requests.UpdateNameRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil {
+
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidBody)
+
+		// Writes data
+		responses.UpdateNameResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusBadRequest)
+		return
+	}
+
+	usr, err := user_service.UpdateName(u.Id, req.Name, h.db)
+
+	if err != nil {
+		// Checks error variants
+		var status = http.StatusBadRequest
+		if user_service.IsServerError(err) {
+
+			status = http.StatusInternalServerError
+		}
+		// Writes data
+		responses.UpdateNameResponseError{
+			ErrorResponse: ToErrorResponse(err),
+		}.
+			SendJson(w, status)
+		return
+	}
+
+	// Converts user
+	resp := ToResponseUser(*usr)
+
+	// Sends data
+	json.NewEncoder(w).Encode(responses.UpdateNameResponseOK{
+		User: resp,
+	})
+}
+
+// Update password
+func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+	// Gets body
+	var req requests.UpdatePasswordRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil {
+
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidBody)
+
+		// Writes data
+		responses.UpdatePasswordResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusBadRequest)
+		return
+	}
+
+	usr, err := user_service.UpdatePassword(u.Id, req.Password, h.db)
+
+	if err != nil {
+		// Checks error variants
+		var status = http.StatusBadRequest
+		if user_service.IsServerError(err) {
+
+			status = http.StatusInternalServerError
+		}
+		// Writes data
+		responses.UpdatePasswordResponseError{
+			ErrorResponse: ToErrorResponse(err),
+		}.
+			SendJson(w, status)
+		return
+	}
+
+	// Converts user
+	resp := ToResponseUser(*usr)
+
+	// Sends data
+	json.NewEncoder(w).Encode(responses.UpdatePasswordResponseOK{
+		User: resp,
+	})
+}
+
+// Block user
+func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+	// Gets body
+	var req requests.BlockRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil {
+
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidBody)
+
+		// Writes data
+		responses.BlockResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusBadRequest)
+		return
+	}
+
+	usr, err := user_service.Block(u.Id, h.db)
+
+	if err != nil {
+		// Checks error variants
+		var status = http.StatusBadRequest
+		if user_service.IsServerError(err) {
+
+			status = http.StatusInternalServerError
+		}
+		// Writes data
+		responses.BlockResponseError{
+			ErrorResponse: ToErrorResponse(err),
+		}.
+			SendJson(w, status)
+		return
+	}
+
+	// Converts user
+	resp := ToResponseUser(*usr)
+
+	// Sends data
+	json.NewEncoder(w).Encode(responses.BlockResponseOK{
+		User: resp,
+	})
+}
+
+// Unlock user
+func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+	// Gets body
+	var req requests.UnblockRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil {
+
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidBody)
+
+		// Writes data
+		responses.UnblockResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusBadRequest)
+		return
+	}
+
+	usr, err := user_service.Unblock(u.Id, h.db)
+
+	if err != nil {
+		// Checks error variants
+		var status = http.StatusBadRequest
+		if user_service.IsServerError(err) {
+
+			status = http.StatusInternalServerError
+		}
+		// Writes data
+		responses.UnblockResponseError{
+			ErrorResponse: ToErrorResponse(err),
+		}.
+			SendJson(w, status)
+		return
+	}
+
+	// Converts user
+	resp := ToResponseUser(*usr)
+
+	// Sends data
+	json.NewEncoder(w).Encode(responses.UnblockResponseOK{
 		User: resp,
 	})
 }
