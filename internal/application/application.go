@@ -15,7 +15,7 @@ import (
 type Application struct {
 	Duration  time.Duration
 	IsService bool
-	Logger    logger.Logger
+	Logger    *logger.Logger
 }
 
 // Creates a new service application
@@ -35,13 +35,13 @@ func New(d time.Duration) *Application {
 }
 
 // Runs the application
-func (a *Application) Run() error {
+func (a *Application) Run() {
 	// Exiting in duration
 	defer a.Logger.Fatalln("application stopped before timeout")
 	go a.ExitTimeOut()
 
 	// The program
-
+	a.Logger.Println("Program started")
 	// The unchangeable part with setting the program settings
 
 	// Loading config
@@ -49,6 +49,7 @@ func (a *Application) Run() error {
 	if err != nil {
 		a.Logger.Fatalln(err)
 	}
+	a.Logger.Println("got config")
 
 	// Setting salt
 	hash.SALT = cfg.Salt
@@ -65,14 +66,13 @@ func (a *Application) Run() error {
 		a.Logger.Fatalln(err)
 	}
 
+	a.Logger.Println("database connected")
+
 	handler := server.NewHandler(db, a.Logger)
 	server := server.NewServer(handler, cfg.Port)
 	server.Run()
 
 	// The program end
-
-	// Returning without error
-	return nil
 }
 
 // Exit in duration, if the application isn't in service mode

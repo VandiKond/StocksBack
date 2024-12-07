@@ -15,13 +15,13 @@ type HandlerFunc func(w http.ResponseWriter, r *http.Request, DB db_cfg.DataBase
 
 // The handler
 type Handler struct {
-	logger logger.Logger
+	logger *logger.Logger
 	db     db_cfg.DataBase
 	funcs  map[string]http.HandlerFunc
 }
 
 // Created a new handler
-func NewHandler(db db_cfg.DataBase, logger logger.Logger) *Handler {
+func NewHandler(db db_cfg.DataBase, logger *logger.Logger) *Handler {
 	// Creating handler
 	handler := Handler{
 		logger: logger,
