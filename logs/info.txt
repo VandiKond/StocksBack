@@ -1,5 +1,0 @@
-
-
->>info<<: 07.12.24 8:42:04  Program started
->>info<<: 07.12.24 8:42:04  got config
->>info<<: 07.12.24 8:42:04  database connected

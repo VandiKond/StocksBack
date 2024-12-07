@@ -69,8 +69,6 @@ func New() *Logger {
 		wFatal:   wEaF,
 		levelMap: StringLogLevel,
 	}
-	fmt.Fprint(wIaW, "\n\n")
-	fmt.Fprint(wEaF, "\n\n")
 	return &logger
 }
 

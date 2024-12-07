@@ -45,6 +45,7 @@ func (a *Application) Run() {
 	// The unchangeable part with setting the program settings
 
 	// Loading config
+
 	cfg, err := config.LoadConfig("config/config.yml")
 	if err != nil {
 		a.Logger.Fatalln(err)
