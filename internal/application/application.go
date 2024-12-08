@@ -5,10 +5,19 @@ import (
 	"time"
 
 	"github.com/VandiKond/StocksBack/config/config"
+	"github.com/VandiKond/StocksBack/config/db_cfg"
 	"github.com/VandiKond/StocksBack/http/server"
+	"github.com/VandiKond/StocksBack/pkg/cron"
 	"github.com/VandiKond/StocksBack/pkg/file_db"
 	"github.com/VandiKond/StocksBack/pkg/hash"
 	"github.com/VandiKond/StocksBack/pkg/logger"
+	"github.com/VandiKond/StocksBack/pkg/user_service"
+	"github.com/VandiKond/vanerrors"
+)
+
+// The errors
+const (
+	ErrorUpdatingStocks = "error updating stocks"
 )
 
 // Thr application program
@@ -31,6 +40,20 @@ func New(d time.Duration) *Application {
 	return &Application{
 		Duration: d,
 		Logger:   logger.New(),
+	}
+}
+
+// Cron func for updating user
+func CronFunc(db db_cfg.DataBase, logger logger.Logger) func() error {
+	return func() error {
+		users, err := user_service.StockUpdate(db)
+		for _, u := range users {
+			logger.Println("%v got solids from stocks", u)
+		}
+		if err != nil {
+			return vanerrors.NewWrap(ErrorUpdatingStocks, err, vanerrors.EmptyHandler)
+		}
+		return nil
 	}
 }
 
@@ -68,6 +91,10 @@ func (a *Application) Run() {
 	}
 
 	a.Logger.Println("database connected")
+
+	// Running cron
+	cr := cron.New(time.Hour*24, 21, CronFunc(db), a.Logger)
+	cr.Run()
 
 	handler := server.NewHandler(db, a.Logger)
 	server := server.NewServer(handler, cfg.Port)
