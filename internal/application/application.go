@@ -44,7 +44,7 @@ func New(d time.Duration) *Application {
 }
 
 // Cron func for updating user
-func CronFunc(db db_cfg.DataBase, logger logger.Logger) func() error {
+func CronFunc(db db_cfg.DataBase, logger *logger.Logger) func() error {
 	return func() error {
 		users, err := user_service.StockUpdate(db)
 		for _, u := range users {
@@ -93,7 +93,7 @@ func (a *Application) Run() {
 	a.Logger.Println("database connected")
 
 	// Running cron
-	cr := cron.New(time.Hour*24, 21, CronFunc(db), a.Logger)
+	cr := cron.New(time.Hour*24, 21, CronFunc(db, a.Logger), a.Logger)
 	cr.Run()
 
 	handler := server.NewHandler(db, a.Logger)
