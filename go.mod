@@ -3,7 +3,7 @@ module github.com/VandiKond/StocksBack
 go 1.23.0
 
 require (
-	github.com/VandiKond/vanerrors v0.5.2 // direct
+	github.com/VandiKond/vanerrors v0.6.3
 	golang.org/x/crypto v0.30.0 // direct
 )
 

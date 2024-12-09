@@ -33,3 +33,6 @@ config/config.yml
 # logs
 logs/error.txt
 logs/info.txt
+
+# vscode settings
+.vscode/
