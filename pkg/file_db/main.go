@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"time"
 
 	"github.com/VandiKond/StocksBack/config/user_cfg"
 	"github.com/VandiKond/StocksBack/pkg/query"
@@ -42,7 +43,7 @@ func NewFileDB(fn string, key string) (*FileDB, error) {
 }
 
 // Created tables (a array of users)
-func (db *FileDB) Create() error {
+func (db *FileDB) Init() error {
 	// Decoding data
 	usrArr := []user_cfg.User{}
 	err := json.NewDecoder(db).Decode(&usrArr)
@@ -81,7 +82,7 @@ func (db *FileDB) Save() error {
 }
 
 // Created a new user
-func (db *FileDB) NewUser(usr user_cfg.User) error {
+func (db *FileDB) Create(usr user_cfg.User) error {
 	// Gets the user data
 	usrArr := db.data
 
@@ -111,13 +112,13 @@ func (db *FileDB) GetAll() ([]user_cfg.User, error) {
 }
 
 // Selecting user by id
-func (db *FileDB) Select(id uint64) (*user_cfg.User, error) {
+func (db *FileDB) GetOne(id uint64) (*user_cfg.User, error) {
 	usrArr := db.data
 	return &usrArr[id], nil
 }
 
 // Selecting by query with limit
-func (db *FileDB) SelectNumBy(q query.Query, num int) ([]user_cfg.User, error) {
+func (db *FileDB) GetNumBy(q query.Query, num int) ([]user_cfg.User, error) {
 	// Gets the user data
 	usrArr := db.data
 
@@ -131,14 +132,14 @@ func (db *FileDB) SelectNumBy(q query.Query, num int) ([]user_cfg.User, error) {
 }
 
 // Selects users by query
-func (db *FileDB) SelectBy(q query.Query) ([]user_cfg.User, error) {
-	return db.SelectNumBy(q, -1)
+func (db *FileDB) GetAllBy(q query.Query) ([]user_cfg.User, error) {
+	return db.GetNumBy(q, -1)
 }
 
 // Selects user by query
-func (db *FileDB) SelectOneBy(q query.Query) (*user_cfg.User, error) {
+func (db *FileDB) GetOneBy(q query.Query) (*user_cfg.User, error) {
 	// Selects one user
-	res, err := db.SelectNumBy(q, 1)
+	res, err := db.GetNumBy(q, 1)
 
 	if err != nil {
 		return nil, err
@@ -152,7 +153,7 @@ func (db *FileDB) SelectOneBy(q query.Query) (*user_cfg.User, error) {
 }
 
 // Updates the user
-func (db *FileDB) Update(usr user_cfg.User) error {
+func (db *FileDB) update(usr user_cfg.User) error {
 	// Gets the user data
 	usrArr := db.data
 
@@ -176,35 +177,104 @@ func (db *FileDB) Update(usr user_cfg.User) error {
 	return nil
 }
 
-// Updating a group of users
-func (db *FileDB) UpdateGroup(users []user_cfg.User) error {
-	// Gets the user data
-	usrArr := db.data
-
-	// Checks all users
-	for _, usr := range users {
-		// Checks the if the id is valid
-		if len(usrArr) <= int(usr.Id) {
-			return vanerrors.NewSimple(InvalidId)
-		}
-		// Updates the user
-		usrArr[usr.Id] = usr
+// Update solids
+func (db *FileDB) UpdateSolids(id uint64, num int64) (*user_cfg.User, error) {
+	// Checking id
+	if id >= uint64(len(db.data)) {
+		return nil, vanerrors.NewSimple(InvalidId)
 	}
 
-	// Saving users to the data
-	db.data = usrArr
+	// Getting user
+	usr := db.data[id]
 
-	// Saving the data base
-	err := db.Save()
-	if err != nil {
-		return vanerrors.NewWrap(ErrorEncodingData, err, vanerrors.EmptyHandler)
+	// Updating user
+	usr.SolidBalance += num
+
+	return &usr, db.update(usr)
+}
+
+// Update stocks
+func (db *FileDB) UpdateStocks(id uint64, num int64) (*user_cfg.User, error) {
+	// Checking id
+	if id >= uint64(len(db.data)) {
+		return nil, vanerrors.NewSimple(InvalidId)
 	}
 
-	return nil
+	// Getting user
+	usr := db.data[id]
+
+	// Updating user
+	usr.StockBalance += num
+
+	return &usr, db.update(usr)
+}
+
+// Update name
+func (db *FileDB) UpdateName(id uint64, name string) (*user_cfg.User, error) {
+	// Checking id
+	if id >= uint64(len(db.data)) {
+		return nil, vanerrors.NewSimple(InvalidId)
+	}
+
+	// Getting user
+	usr := db.data[id]
+
+	// Updating user
+	usr.Name = name
+
+	return &usr, db.update(usr)
+}
+
+// Update password
+func (db *FileDB) UpdatePassword(id uint64, password string) (*user_cfg.User, error) {
+	// Checking id
+	if id >= uint64(len(db.data)) {
+		return nil, vanerrors.NewSimple(InvalidId)
+	}
+
+	// Getting user
+	usr := db.data[id]
+
+	// Updating user
+	usr.Password = password
+
+	return &usr, db.update(usr)
+}
+
+// Changing block
+func (db *FileDB) UpdateBlock(id uint64, block bool) (*user_cfg.User, error) {
+	// Checking id
+	if id >= uint64(len(db.data)) {
+		return nil, vanerrors.NewSimple(InvalidId)
+	}
+
+	// Getting user
+	usr := db.data[id]
+
+	// Updating user
+	usr.IsBlocked = block
+
+	return &usr, db.update(usr)
+}
+
+// Changing last farm
+func (db *FileDB) UpdateLastFarm(id uint64) (*user_cfg.User, error) {
+	// Checking id
+	if id >= uint64(len(db.data)) {
+		return nil, vanerrors.NewSimple(InvalidId)
+	}
+
+	// Getting user
+	usr := db.data[id]
+
+	// Updating user
+	usr.CreatedAt = time.Now()
+
+	return &usr, db.update(usr)
 }
 
 // Gets the length of users
-func (db *FileDB) GetLen() (uint64, error) {
+func (db *FileDB) Len() (uint64, error) {
 	return uint64(len(db.data)), nil
 }
 

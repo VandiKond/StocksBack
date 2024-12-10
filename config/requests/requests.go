@@ -9,7 +9,7 @@ type SingUpRequest struct {
 type FarmRequest struct{}
 
 type BuyStocksRequest struct {
-	Num uint64 `json:"num"`
+	Num int64 `json:"num"`
 }
 
 type UpdateNameRequest struct {

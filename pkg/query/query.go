@@ -52,8 +52,8 @@ const (
 
 // The map for string values of separators
 var StringSeparator = map[Separator]string{
-	OR:  "OR",
-	AND: "AND",
+	OR:  "or",
+	AND: "and",
 }
 
 // the sing id
@@ -378,4 +378,26 @@ func (query Query) String() string {
 	}
 
 	return res
+}
+
+func (query Query) PrepareString() (string, []any) {
+	// Setting result as a string
+	var resStr string
+	var resSlice []any
+
+	for i, qr := range query {
+		// Separator switch
+		switch qr.Separator {
+
+		case NOT_SEPARATOR:
+			// Adding query setting expression
+			resStr += fmt.Sprintf("%s %s $%d", StringUserField[qr.Type], SignToString(qr.Sing, qr.Not), i+1)
+			resSlice = append(resSlice, qr.Y)
+		case OR, AND:
+			// Adding separator
+			resStr += " " + StringSeparator[qr.Separator] + " "
+		}
+	}
+
+	return resStr, resSlice
 }

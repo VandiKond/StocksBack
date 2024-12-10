@@ -20,8 +20,8 @@ type User struct {
 	Id           uint64    `json:"id"`
 	Name         string    `json:"name"`
 	Password     string    `json:"password"`
-	SolidBalance uint64    `json:"solid_balance"`
-	StockBalance uint64    `json:"stock_balance"`
+	SolidBalance int64     `json:"solid_balance"`
+	StockBalance int64     `json:"stock_balance"`
 	IsBlocked    bool      `json:"is_blocked"`
 	LastFarming  time.Time `json:"last_farming"`
 	CreatedAt    time.Time `json:"created_at"`
