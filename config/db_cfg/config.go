@@ -22,16 +22,20 @@ import (
 // - GetLen : gets the total amount of users (it should get the last id of the user)
 // - io.Closer : closes the data base
 type DataBase interface {
-	Create() error
-	NewUser(user_cfg.User) error
+	Init() error
+	Create(user user_cfg.User) error
 	GetAll() ([]user_cfg.User, error)
-	Select(uint64) (*user_cfg.User, error)
-	SelectBy(query.Query) ([]user_cfg.User, error)
-	SelectNumBy(query.Query, int) ([]user_cfg.User, error)
-	SelectOneBy(query.Query) (*user_cfg.User, error)
-	Update(user_cfg.User) error
-	UpdateGroup([]user_cfg.User) error
-	GetLen() (uint64, error)
-	CheckKey(string) (bool, error)
+	GetAllBy(query query.Query) ([]user_cfg.User, error)
+	GetNumBy(query query.Query, num int) ([]user_cfg.User, error)
+	GetOneBy(query query.Query) (*user_cfg.User, error)
+	GetOne(id uint64) (*user_cfg.User, error)
+	UpdateSolids(id uint64, num int64) (*user_cfg.User, error)
+	UpdateStocks(id uint64, num int64) (*user_cfg.User, error)
+	UpdateName(id uint64, name string) (*user_cfg.User, error)
+	UpdatePassword(id uint64, password string) (*user_cfg.User, error)
+	UpdateBlock(id uint64, block bool) (*user_cfg.User, error)
+	UpdateLastFarm(id uint64) (*user_cfg.User, error)
+	Len() (uint64, error)
+	CheckKey(key string) (bool, error)
 	io.Closer
 }

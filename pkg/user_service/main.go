@@ -34,8 +34,8 @@ func IsServerError(err error) bool {
 
 // Global variables
 var (
-	FarmingLimit        = time.Hour // the farming limit
-	StockCost    uint64 = 30        // the stock cost
+	FarmingLimit       = time.Hour // the farming limit
+	StockCost    int64 = 30        // the stock cost
 )
 
 // Sing up data
@@ -59,7 +59,7 @@ type SingInKey struct {
 // Creates a new user
 func (u SingUpUser) SingUp(db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Gets the length of users
-	id, err := db.GetLen()
+	id, err := db.Len()
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorGettingId, err, vanerrors.EmptyHandler)
 	}
@@ -71,7 +71,7 @@ func (u SingUpUser) SingUp(db db_cfg.DataBase) (*user_cfg.User, error) {
 	}
 
 	// Creates the user in the data base
-	err = db.NewUser(*usr)
+	err = db.Create(*usr)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
@@ -80,33 +80,33 @@ func (u SingUpUser) SingUp(db db_cfg.DataBase) (*user_cfg.User, error) {
 }
 
 // Singing in with secret key
-func (u SingInKey) SingInWithKey(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
+func (u SingInKey) SingInWithKey(db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Checking key
 	ok, err := db.CheckKey(u.Key)
 
 	// Error
 	if err != nil {
-		return false, nil, vanerrors.NewWrap(ErrorCheckingKey, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.NewWrap(ErrorCheckingKey, err, vanerrors.EmptyHandler)
 	}
 
 	// Wrong key
 	if !ok {
-		return false, nil, vanerrors.NewSimple(WrongKey)
+		return nil, vanerrors.NewSimple(WrongKey)
 	}
 
 	// Getting user
-	usr, err := db.Select(u.Id)
+	usr, err := db.GetOne(u.Id)
 	if err != nil {
-		return false, nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
+		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
 
-	return true, usr, nil
+	return usr, nil
 }
 
 // Sings in
 func (u SingInUser) SingIn(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(u.Id)
+	usr, err := db.GetOne(u.Id)
 	if err != nil {
 		return false, nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
@@ -121,9 +121,9 @@ func (u SingInUser) SingIn(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
 }
 
 // Farms
-func Farm(id uint64, db db_cfg.DataBase) (uint64, *user_cfg.User, error) {
+func Farm(id uint64, db db_cfg.DataBase) (int64, *user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(id)
+	usr, err := db.GetOne(id)
 	if err != nil {
 		return 0, nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
@@ -135,25 +135,22 @@ func Farm(id uint64, db db_cfg.DataBase) (uint64, *user_cfg.User, error) {
 	}
 
 	// Gets the maximum value
-	var max uint64 = usr.StockBalance
+	var max int64 = usr.StockBalance
 	if max <= StockCost {
 		max = StockCost
 	}
 
 	// Gets the random value
-	amount := rand.Uint64N(max)
+	amount := rand.Int64N(max)
 
 	// Edits the user
-	usr.SolidBalance += amount
-	usr.LastFarming = time.Now()
 
-	// Checks that user is valid
-	if !usr.Valid() {
-		return amount, usr, vanerrors.NewSimple(InvalidUser)
+	usr, err = db.UpdateLastFarm(id)
+	if err != nil {
+		return amount, usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
 
-	// Updates the user
-	err = db.Update(*usr)
+	usr, err = db.UpdateSolids(id, amount)
 	if err != nil {
 		return amount, usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
@@ -164,7 +161,7 @@ func Farm(id uint64, db db_cfg.DataBase) (uint64, *user_cfg.User, error) {
 // Updates all users with stacks
 func StockUpdate(db db_cfg.DataBase) ([]user_cfg.User, error) {
 	// Selects all users by query
-	users, err := db.SelectBy(query.Query{
+	users, err := db.GetAllBy(query.Query{
 		{
 			Separator: query.NOT_SEPARATOR,
 			Type:      query.STOCK_BALANCE,
@@ -185,9 +182,14 @@ func StockUpdate(db db_cfg.DataBase) ([]user_cfg.User, error) {
 	}
 
 	for i := range users {
-		// Updates the user
+
 		usr := &users[i]
-		usr.SolidBalance += usr.StockBalance
+
+		// Updates the user
+		usr, err = db.UpdateSolids(usr.Id, usr.StockBalance)
+		if err != nil {
+			return users, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+		}
 
 		// Checks that user is valid
 		if !usr.Valid() {
@@ -195,19 +197,13 @@ func StockUpdate(db db_cfg.DataBase) ([]user_cfg.User, error) {
 		}
 	}
 
-	// Updates a group of users
-	err = db.UpdateGroup(users)
-	if err != nil {
-		return users, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
-	}
-
 	return users, nil
 }
 
 // Byes stocks
-func BuyStocks(id uint64, num uint64, db db_cfg.DataBase) (*user_cfg.User, error) {
+func BuyStocks(id uint64, num int64, db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(id)
+	usr, err := db.GetOne(id)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
@@ -221,17 +217,20 @@ func BuyStocks(id uint64, num uint64, db db_cfg.DataBase) (*user_cfg.User, error
 	}
 
 	// Updates the user
-	usr.SolidBalance -= cost
-	usr.StockBalance += num
+
+	usr, err = db.UpdateSolids(usr.Id, -cost)
+	if err != nil {
+		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+	}
+
+	usr, err = db.UpdateStocks(usr.Id, num)
+	if err != nil {
+		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+	}
+
 	// Checks that user is valid
 	if !usr.Valid() {
 		return usr, vanerrors.NewSimple(InvalidUser)
-	}
-
-	// Updates user in data base
-	err = db.Update(*usr)
-	if err != nil {
-		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
 
 	return usr, nil
@@ -240,23 +239,20 @@ func BuyStocks(id uint64, num uint64, db db_cfg.DataBase) (*user_cfg.User, error
 // Updates the user name
 func UpdateName(id uint64, name string, db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(id)
+	usr, err := db.GetOne(id)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
 
 	// Updates the user
-	usr.Name = name
+	usr, err = db.UpdateName(usr.Id, name)
+	if err != nil {
+		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+	}
 
 	// Checks that user is valid
 	if !usr.Valid() {
 		return usr, vanerrors.NewSimple(InvalidUser)
-	}
-
-	// Updates user in data base
-	err = db.Update(*usr)
-	if err != nil {
-		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
 
 	return usr, nil
@@ -265,23 +261,21 @@ func UpdateName(id uint64, name string, db db_cfg.DataBase) (*user_cfg.User, err
 // Updates the user password
 func UpdatePassword(id uint64, password string, db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(id)
+	usr, err := db.GetOne(id)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
 
 	// Updates the password
 	usr.NewPassword(password)
+	usr, err = db.UpdatePassword(usr.Id, usr.Password)
+	if err != nil {
+		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+	}
 
 	// Checks that user is valid
 	if !usr.Valid() {
 		return usr, vanerrors.NewSimple(InvalidUser)
-	}
-
-	// Updates user in data base
-	err = db.Update(*usr)
-	if err != nil {
-		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
 
 	return usr, nil
@@ -290,7 +284,7 @@ func UpdatePassword(id uint64, password string, db db_cfg.DataBase) (*user_cfg.U
 // Blocks the user
 func Block(id uint64, db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(id)
+	usr, err := db.GetOne(id)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
@@ -301,17 +295,14 @@ func Block(id uint64, db db_cfg.DataBase) (*user_cfg.User, error) {
 	}
 
 	// Blocks user
-	usr.IsBlocked = true
+	usr, err = db.UpdateBlock(usr.Id, true)
+	if err != nil {
+		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+	}
 
 	// Checks that user is valid
 	if !usr.Valid() {
 		return usr, vanerrors.NewSimple(InvalidUser)
-	}
-
-	// Updates user in data base
-	err = db.Update(*usr)
-	if err != nil {
-		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
 
 	return usr, nil
@@ -320,7 +311,7 @@ func Block(id uint64, db db_cfg.DataBase) (*user_cfg.User, error) {
 // Unblocks the user
 func Unblock(id uint64, db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Selects the user by id
-	usr, err := db.Select(id)
+	usr, err := db.GetOne(id)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelectingUser, err, vanerrors.EmptyHandler)
 	}
@@ -330,19 +321,15 @@ func Unblock(id uint64, db db_cfg.DataBase) (*user_cfg.User, error) {
 		return usr, vanerrors.NewSimple(UserIsNotBlocked)
 	}
 
-	// Unblocks user
-	usr.IsBlocked = false
+	// Blocks user
+	usr, err = db.UpdateBlock(usr.Id, false)
+	if err != nil {
+		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
+	}
 
 	// Checks that user is valid\
 	if !usr.Valid() {
 		return usr, vanerrors.NewSimple(InvalidUser)
-	}
-
-	// Updates user in data base
-
-	err = db.Update(*usr)
-	if err != nil {
-		return usr, vanerrors.NewWrap(ErrorUpdatingUser, err, vanerrors.EmptyHandler)
 	}
 
 	return usr, nil

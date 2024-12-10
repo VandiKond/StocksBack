@@ -85,7 +85,7 @@ func (a *Application) Run() {
 	}
 	defer db.Close()
 	// Creating the tables
-	err = db.Create()
+	err = db.Init()
 	if err != nil {
 		a.Logger.Fatalln(err)
 	}

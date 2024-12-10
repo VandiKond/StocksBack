@@ -48,7 +48,7 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 
 				return
 			}
-			ok, usr, err := keyData.SingInWithKey(h.db)
+			usr, err := keyData.SingInWithKey(h.db)
 			if err != nil {
 
 				// Checks error variants
@@ -63,18 +63,6 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 					ErrorResponse: ToErrorResponse(err),
 				}.
 					SendJson(w, status)
-				return
-			}
-			if !ok {
-
-				// Creates an error
-				resp := vanerrors.NewSimple(WrongPassword)
-
-				// Writes data
-				responses.SingInResponseError{
-					ErrorResponse: ToErrorResponse(resp),
-				}.
-					SendJson(w, http.StatusUnauthorized)
 				return
 			}
 			next(w, r, *usr)
