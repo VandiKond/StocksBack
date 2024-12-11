@@ -24,6 +24,7 @@ const (
 	ErrorSelecting       = "error selecting"
 	ErrorGettingLength   = "error getting length"
 	ErrorUpdatingUser    = "error updating user"
+	NotFound             = "not found"
 )
 
 // The data base
@@ -66,7 +67,7 @@ func (db *DB) Init() error {
 // Creates a new user
 func (db *DB) Create(u user_cfg.User) error {
 	// Prepares the query
-	query := `insert into users (id, name, password, solid_balance, stock_balance, is_blocked, last_farming, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?);`
+	query := `insert into users (id, name, password, solid_balance, stock_balance, is_blocked, last_farming, created_at) values ($1, $2, $3, $4, $5, $6, $7, $8);`
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -99,7 +100,7 @@ func (db *DB) GetAll() ([]user_cfg.User, error) {
 	for rows.Next() {
 
 		var user user_cfg.User
-		err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+		err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 		if err != nil {
 			return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 		}
@@ -152,7 +153,7 @@ func (db *DB) GetNumBy(q query.Query, num int) ([]user_cfg.User, error) {
 	for rows.Next() {
 
 		var user user_cfg.User
-		err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+		err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 		if err != nil {
 			return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 		}
@@ -183,12 +184,17 @@ func (db *DB) GetOne(id uint64) (*user_cfg.User, error) {
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorSelecting, err, vanerrors.EmptyHandler)
 	}
+
 	defer rows.Close()
 
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -218,7 +224,7 @@ func (db *DB) GetOneBy(q query.Query) (*user_cfg.User, error) {
 
 // Updates block
 func (db *DB) UpdateBlock(id uint64, block bool) (*user_cfg.User, error) {
-	query := `update users set is_blocked = $1 where id = $2;`
+	query := `update users set is_blocked = $1 where id = $2 returning *;`
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -236,7 +242,11 @@ func (db *DB) UpdateBlock(id uint64, block bool) (*user_cfg.User, error) {
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -250,7 +260,7 @@ func (db *DB) UpdateBlock(id uint64, block bool) (*user_cfg.User, error) {
 
 // Updates last farm
 func (db *DB) UpdateLastFarm(id uint64) (*user_cfg.User, error) {
-	query := `update users set last_farming = $1 where id = $2;`
+	query := `update users set last_farming = $1 where id = $2 returning *;`
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -268,7 +278,11 @@ func (db *DB) UpdateLastFarm(id uint64) (*user_cfg.User, error) {
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -282,7 +296,7 @@ func (db *DB) UpdateLastFarm(id uint64) (*user_cfg.User, error) {
 
 // Updates name
 func (db *DB) UpdateName(id uint64, name string) (*user_cfg.User, error) {
-	query := `update users set name = $1 where id = $2;`
+	query := `update users set name = $1 where id = $2 returning *;`
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -300,7 +314,11 @@ func (db *DB) UpdateName(id uint64, name string) (*user_cfg.User, error) {
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -314,7 +332,7 @@ func (db *DB) UpdateName(id uint64, name string) (*user_cfg.User, error) {
 
 // Updates password
 func (db *DB) UpdatePassword(id uint64, password string) (*user_cfg.User, error) {
-	query := `update users set password = $1 where id = $2;`
+	query := `update users set password = $1 where id = $2 returning *;`
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -332,7 +350,11 @@ func (db *DB) UpdatePassword(id uint64, password string) (*user_cfg.User, error)
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -345,7 +367,7 @@ func (db *DB) UpdatePassword(id uint64, password string) (*user_cfg.User, error)
 }
 
 func (db *DB) UpdateSolids(id uint64, num int64) (*user_cfg.User, error) {
-	query := `update users set solid_balance = $1 where id = $2;`
+	query := "update users set solid_balance = solid_balance + $1 where id = $2 returning *;"
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -363,7 +385,11 @@ func (db *DB) UpdateSolids(id uint64, num int64) (*user_cfg.User, error) {
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -376,7 +402,7 @@ func (db *DB) UpdateSolids(id uint64, num int64) (*user_cfg.User, error) {
 }
 
 func (db *DB) UpdateStocks(id uint64, num int64) (*user_cfg.User, error) {
-	query := `update users set stock_balance = $1 where id = $2;`
+	query := "update users set stock_balance = stock_balance + $1 where id = $2 returning *;"
 
 	stmt, err := db.db.Prepare(query)
 	if err != nil {
@@ -394,7 +420,11 @@ func (db *DB) UpdateStocks(id uint64, num int64) (*user_cfg.User, error) {
 	// Getting user
 	var user user_cfg.User
 
-	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, user.IsBlocked, &user.LastFarming, &user.CreatedAt)
+	if !rows.Next() {
+		return nil, vanerrors.NewSimple(NotFound)
+	}
+
+	err = rows.Scan(&user.Id, &user.Name, &user.Password, &user.SolidBalance, &user.StockBalance, &user.IsBlocked, &user.LastFarming, &user.CreatedAt)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorScanningRows, err, vanerrors.EmptyHandler)
 	}
@@ -407,22 +437,26 @@ func (db *DB) UpdateStocks(id uint64, num int64) (*user_cfg.User, error) {
 }
 
 func (db *DB) Len() (uint64, error) {
-	query := `select id from users ORDER BY id desc limit 1;`
+	query := `select id from users order by id desc limit 1;`
 	// Updating the user
 	rows, err := db.db.Query(query)
 	if err != nil {
 		return 0, vanerrors.NewWrap(ErrorSelecting, err, vanerrors.EmptyHandler)
 	}
 	defer rows.Close()
+
 	var length uint64
+
+	if !rows.Next() {
+		return 0, nil
+	}
+
 	err = rows.Scan(&length)
+
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return 0, nil
-		}
 		return 0, vanerrors.NewWrap(ErrorSelecting, err, vanerrors.EmptyHandler)
 	}
-	return length, nil
+	return length + 1, nil
 }
 
 // Close the data base

@@ -23,3 +23,7 @@ type UpdatePasswordRequest struct {
 type BlockRequest struct{}
 
 type UnblockRequest struct{}
+
+type GetRequest struct {
+	Id uint64 `json:"id"`
+}

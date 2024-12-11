@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+type MainResponse struct {
+	Pages []string `json:"pages"`
+}
+
 type ResponseUser struct {
 	Id           uint64    `json:"id"`
 	Name         string    `json:"name"`
@@ -50,7 +54,6 @@ type FarmResponseOK struct {
 }
 
 type FarmResponseError struct {
-	User ResponseUser `json:"user"`
 	ErrorResponse
 }
 
@@ -59,7 +62,6 @@ type BuyStocksResponseOK struct {
 }
 
 type BuyStocksResponseError struct {
-	User ResponseUser `json:"user"`
 	ErrorResponse
 }
 
@@ -68,7 +70,6 @@ type UpdateNameResponseOK struct {
 }
 
 type UpdateNameResponseError struct {
-	User ResponseUser `json:"user"`
 	ErrorResponse
 }
 
@@ -77,7 +78,6 @@ type UpdatePasswordResponseOK struct {
 }
 
 type UpdatePasswordResponseError struct {
-	User ResponseUser `json:"user"`
 	ErrorResponse
 }
 
@@ -86,7 +86,6 @@ type BlockResponseOK struct {
 }
 
 type BlockResponseError struct {
-	User ResponseUser `json:"user"`
 	ErrorResponse
 }
 
@@ -95,6 +94,13 @@ type UnblockResponseOK struct {
 }
 
 type UnblockResponseError struct {
-	User ResponseUser `json:"user"`
 	ErrorResponse
+}
+
+type GetResponseError struct {
+	ErrorResponse
+}
+
+type GetResponseOK struct {
+	User ResponseUser `json:"user"`
 }
