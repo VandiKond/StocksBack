@@ -2,11 +2,13 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
 	"time"
 
 	_ "github.com/lib/pq"
 
+	"github.com/VandiKond/StocksBack/config/config"
 	"github.com/VandiKond/StocksBack/config/user_cfg"
 	"github.com/VandiKond/StocksBack/pkg/query"
 	"github.com/VandiKond/vanerrors"
@@ -14,13 +16,14 @@ import (
 
 // The errors
 const (
-	ErrorCreateTable    = "error creating table"
-	ErrorPreparingQuery = "error preparing query"
-	ErrorInsertingUser  = "error inserting user"
-	ErrorScanningRows   = "error scanning rows"
-	ErrorSelecting      = "error selecting"
-	ErrorGettingLength  = "error getting length"
-	ErrorUpdatingUser   = "error updating user"
+	ErrorOpeningDataBase = "error opining database"
+	ErrorCreateTable     = "error creating table"
+	ErrorPreparingQuery  = "error preparing query"
+	ErrorInsertingUser   = "error inserting user"
+	ErrorScanningRows    = "error scanning rows"
+	ErrorSelecting       = "error selecting"
+	ErrorGettingLength   = "error getting length"
+	ErrorUpdatingUser    = "error updating user"
 )
 
 // The data base
@@ -29,19 +32,28 @@ type DB struct {
 	key string
 }
 
+// Creates a new data base connection \
+func New(cfg config.DatabaseCfg, key string) (*DB, error) {
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Name))
+	if err != nil {
+		return nil, vanerrors.NewWrap(ErrorOpeningDataBase, err, vanerrors.EmptyHandler)
+	}
+	return &DB{db: db, key: key}, nil
+}
+
 // Creates table if not exists
 func (db *DB) Init() error {
 
-	query := `create table if not exit users (
-   id bigint primary key,
-   name varchar(255) not null,
-   password varchar(255) not null,
-   solid_balance bigint default 0,
-   stock_balance bigint default 0,
-   is_blocked boolean default false,
-   last_farming timestamp with time zone,
-   created_at timestamp with time zone default current_timestamp
-);`
+	query := `CREATE TABLE IF NOT EXISTS users (
+		id BIGINT PRIMARY KEY,
+		name VARCHAR(255) NOT NULL,
+		password VARCHAR(255) NOT NULL,
+		solid_balance BIGINT DEFAULT 0,
+		stock_balance BIGINT DEFAULT 0,
+		is_blocked BOOLEAN DEFAULT FALSE,
+		last_farming TIMESTAMP WITH TIME ZONE,
+		created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+	);`
 
 	_, err := db.db.Exec(query)
 	if err != nil {

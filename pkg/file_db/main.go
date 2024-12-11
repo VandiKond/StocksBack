@@ -28,7 +28,7 @@ type FileDB struct {
 }
 
 // Creates a new file data base
-func NewFileDB(fn string, key string) (*FileDB, error) {
+func New(fn string, key string) (*FileDB, error) {
 	// Opens the file
 	file, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
