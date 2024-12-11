@@ -8,7 +8,7 @@ import (
 	"github.com/VandiKond/StocksBack/config/db_cfg"
 	"github.com/VandiKond/StocksBack/http/server"
 	"github.com/VandiKond/StocksBack/pkg/cron"
-	"github.com/VandiKond/StocksBack/pkg/file_db"
+	"github.com/VandiKond/StocksBack/pkg/db"
 	"github.com/VandiKond/StocksBack/pkg/hash"
 	"github.com/VandiKond/StocksBack/pkg/logger"
 	"github.com/VandiKond/StocksBack/pkg/user_service"
@@ -79,7 +79,7 @@ func (a *Application) Run() {
 	hash.SALT = cfg.Salt
 
 	// Creating the data base
-	db, err := file_db.NewFileDB(cfg.Database.Name, cfg.Key)
+	db, err := db.New(cfg.Database, cfg.Key)
 	if err != nil {
 		a.Logger.Fatalln(err)
 	}
