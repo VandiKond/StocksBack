@@ -35,12 +35,12 @@ func NewHandler(db db_cfg.DataBase, logger *logger.Logger) *Handler {
 		"/singup": CheckMethodMiddleware(http.MethodPost, handler.SingUpHandler),
 
 		// Stocks and solids
-		"/buy_stocks": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BuyStocksHandler)),
+		"/buy": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BuyStocksHandler)),
 		"/farm":       CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.FarmHandler)),
 
 		// Name and password
-		"/upd_name":     CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdateNameHandler)),
-		"/upd_password": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdatePasswordHandler)),
+		"/change/name":     CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdateNameHandler)),
+		"/change/password": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdatePasswordHandler)),
 
 		// Block
 		"/block":   CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BlockHandler)),

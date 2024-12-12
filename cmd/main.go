@@ -12,7 +12,7 @@ import (
 
 func main() {
 	// Creating a new application with a hour timeout
-	app := application.New(time.Second, db.Constructor{})
+	app := application.New(time.Hour, db.Constructor{})
 
 	// Adding graceful  shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
