@@ -32,7 +32,7 @@ func NewHandler(db db_cfg.DataBase, logger *logger.Logger) *Handler {
 		// Main page
 		"/": handler.MainHandler,
 		// Sign uo
-		"/Signup": CheckMethodMiddleware(http.MethodPost, handler.SignUpHandler),
+		"/signup": CheckMethodMiddleware(http.MethodPost, handler.SignUpHandler),
 
 		// Stocks and solids
 		"/buy": CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BuyStocksHandler)),
