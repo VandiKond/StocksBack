@@ -6,8 +6,8 @@ an api for stocks usage
 
 ### User functionality
 
-- Creating accounts `/singup`
-- Sing in using password or secret key (in the future jwt) 
+- Creating accounts `/signup`
+- Sign in using password or secret key (in the future jwt) 
 - Farming (getting solids based on the stock amount) every hour `/farm`
 - Getting solids from stocks every day at 21 (server time)
 - Buying stocks `/buy`

@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/VandiKond/StocksBack/internal/application"
-	"github.com/VandiKond/StocksBack/pkg/db"
+	"github.com/VandiKond/StocksBack/pkg/file_db"
 )
 
 func main() {
 	// Creating a new application with a hour timeout
-	app := application.New(time.Hour, db.Constructor{})
+	app := application.New(time.Hour, file_db.Constructor{})
 
 	// Adding graceful  shutdown
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
