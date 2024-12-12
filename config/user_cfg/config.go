@@ -11,7 +11,6 @@ import (
 
 // The errors
 const (
-	InvalidName     = "invalid name"     // invalid name
 	InvalidPassword = "invalid password" // invalid password
 )
 
@@ -41,10 +40,6 @@ func (u User) String() string {
 
 // Creates a new user
 func NewUser(name string, password string, id uint64) (*User, error) {
-	// Checking the name
-	if ok := validName(name); !ok {
-		return nil, vanerrors.NewSimple(InvalidName, fmt.Sprintf("name %s has not allowed symbols", name))
-	}
 
 	// Checks the password
 	if ok := validPassword(password); !ok {
@@ -87,15 +82,6 @@ func (u *User) NewPassword(password string) error {
 	return nil
 }
 
-// valid name
-func validName(name string) bool {
-	matched, err := regexp.MatchString(`^[a-zA-Z0-9 _-]*$`, name)
-	if err != nil {
-		return false
-	}
-	return matched
-}
-
 // valid password
 func validPassword(password string) bool {
 	matched, err := regexp.MatchString(`^[a-zA-Z0-9!#$*_&-]*$`, password)
@@ -103,11 +89,6 @@ func validPassword(password string) bool {
 		return false
 	}
 	return matched
-}
-
-// Checks if the user valid
-func (u User) Valid() bool {
-	return validName(u.Name)
 }
 
 // comperes password

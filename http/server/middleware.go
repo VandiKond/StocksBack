@@ -14,11 +14,11 @@ import (
 
 // The errors
 const (
-	UserNotFound          = "user not found"
-	WrongPassword         = "wrong password"
-	WrongKey              = "wrong key"
-	NoAutorotationHeaders = "no authorization headers"
-	InvalidHeader         = "invalid header"
+	UserNotFound           = "user not found"
+	WrongPassword          = "wrong password"
+	WrongKey               = "wrong key"
+	NoAuthorizationHeaders = "no authorization headers"
+	InvalidHeader          = "invalid header"
 )
 
 // function with singing in
@@ -63,6 +63,9 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 					ErrorResponse: ToErrorResponse(err),
 				}.
 					SendJson(w, status)
+
+				h.logger.Warnf("unable to login with key, reason: %v", err)
+
 				return
 			}
 			next(w, r, *usr)
@@ -70,12 +73,12 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 		}
 
 		// Gets header
-		key = r.Header.Get("Autorotation")
+		key = r.Header.Get("Authorization")
 
 		if key == "" {
 
 			// Creates an error
-			resp := vanerrors.NewSimple(NoAutorotationHeaders)
+			resp := vanerrors.NewSimple(NoAuthorizationHeaders)
 
 			// Writes data
 			responses.SingInResponseError{
@@ -115,6 +118,9 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 				ErrorResponse: ToErrorResponse(err),
 			}.
 				SendJson(w, status)
+
+			h.logger.Warnf("unable to login, reason: %v", err)
+
 			return
 		}
 		if !ok {
@@ -135,13 +141,13 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 }
 
 // Checks the method
-func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
+func CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Checking method
 		if r.Method != method {
 
 			// Creates an error
-			resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s is not allowed, allowed method: %s", r.Method, http.MethodPatch))
+			resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s is not allowed, allowed method: %s", r.Method, method))
 
 			// Writes data
 			responses.SingUpResponseError{

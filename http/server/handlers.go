@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"net/http"
+	"slices"
 
 	"github.com/VandiKond/StocksBack/config/requests"
 	"github.com/VandiKond/StocksBack/config/responses"
@@ -36,6 +37,20 @@ func ToErrorResponse(err error) responses.ErrorResponse {
 		ErrorName: vanerrors.GetName(err),
 		Error:     vanerrors.GetMessage(err),
 	}
+}
+
+// Main page
+func (h *Handler) MainHandler(w http.ResponseWriter, r *http.Request) {
+	// Gets all pages
+	pages := []string{}
+	for fn := range h.funcs {
+		pages = append(pages, fn)
+	}
+	slices.Sort[[]string, string](pages)
+	// Sends data
+	json.NewEncoder(w).Encode(responses.MainResponse{
+		Pages: pages,
+	})
 }
 
 // It creates a new user
@@ -108,6 +123,8 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
+
+		h.logger.Warnf("%v unable to farm, reason: %v", u, err)
 
 		return
 	}
@@ -280,6 +297,22 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 
 // Block user
 func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+	// Checking the key header (without it not allowed)
+	key := r.Header.Get("Key")
+
+	if key == "" {
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidHeader)
+
+		// Writes data
+		responses.BlockResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusForbidden)
+
+		return
+	}
+
 	// Gets body
 	var req requests.BlockRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -325,11 +358,27 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 		User: resp,
 	})
 
-	h.logger.Printf("block: %v", u.Name, *usr)
+	h.logger.Printf("block: %v", *usr)
 }
 
 // Unlock user
 func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
+	// Checking the key header (without it not allowed)
+	key := r.Header.Get("Key")
+
+	if key == "" {
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidHeader)
+
+		// Writes data
+		responses.BlockResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusForbidden)
+
+		return
+	}
+
 	// Gets body
 	var req requests.UnblockRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -375,5 +424,56 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 		User: resp,
 	})
 
-	h.logger.Printf("unblock: %v", u.Name, *usr)
+	h.logger.Printf("unblock: %v", *usr)
+}
+
+// Get's user
+func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
+	// Gets body
+	var req requests.GetRequest
+	err := json.NewDecoder(r.Body).Decode(&req)
+
+	if err != nil {
+
+		// Creates an error
+		resp := vanerrors.NewSimple(InvalidBody)
+
+		// Writes data
+		responses.UpdateNameResponseError{
+			ErrorResponse: ToErrorResponse(resp),
+		}.
+			SendJson(w, http.StatusBadRequest)
+
+		return
+	}
+
+	usr, err := user_service.Get(req.Id, h.db)
+
+	if err != nil {
+		// Checks error variants
+		var status = http.StatusBadRequest
+		if user_service.IsServerError(err) {
+
+			status = http.StatusInternalServerError
+		}
+		// Writes data
+		responses.UpdateNameResponseError{
+			ErrorResponse: ToErrorResponse(err),
+		}.
+			SendJson(w, status)
+
+		h.logger.Warnf("user %d not got, reason:", req.Id, err)
+
+		return
+	}
+
+	// Converts user
+	resp := ToResponseUser(*usr)
+
+	// Sends data
+	json.NewEncoder(w).Encode(responses.UpdateNameResponseOK{
+		User: resp,
+	})
+
+	h.logger.Printf("sended user: %v", *usr)
 }
