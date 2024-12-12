@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/VandiKond/StocksBack/config/config"
+	"github.com/VandiKond/StocksBack/config/db_cfg"
 	"github.com/VandiKond/StocksBack/config/user_cfg"
 	"github.com/VandiKond/StocksBack/pkg/query"
 	"github.com/VandiKond/vanerrors"
@@ -27,10 +29,13 @@ type FileDB struct {
 	key  string
 }
 
+// The db constructor
+type Constructor struct{}
+
 // Creates a new file data base
-func New(fn string, key string) (*FileDB, error) {
+func (c Constructor) New(cfg config.DatabaseCfg, key string) (db_cfg.DataBase, error) {
 	// Opens the file
-	file, err := os.OpenFile(fn, os.O_RDWR|os.O_CREATE, 0666)
+	file, err := os.OpenFile(cfg.Name, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorOpeningFile, err, vanerrors.EmptyHandler)
 	}
@@ -114,6 +119,9 @@ func (db *FileDB) GetAll() ([]user_cfg.User, error) {
 // Selecting user by id
 func (db *FileDB) GetOne(id uint64) (*user_cfg.User, error) {
 	usrArr := db.data
+	if len(usrArr) <= int(id) {
+		return nil, vanerrors.NewSimple(InvalidId)
+	}
 	return &usrArr[id], nil
 }
 

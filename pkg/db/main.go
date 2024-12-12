@@ -9,6 +9,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/VandiKond/StocksBack/config/config"
+	"github.com/VandiKond/StocksBack/config/db_cfg"
 	"github.com/VandiKond/StocksBack/config/user_cfg"
 	"github.com/VandiKond/StocksBack/pkg/query"
 	"github.com/VandiKond/vanerrors"
@@ -33,8 +34,11 @@ type DB struct {
 	key string
 }
 
-// Creates a new data base connection \
-func New(cfg config.DatabaseCfg, key string) (*DB, error) {
+// The db constructor
+type Constructor struct{}
+
+// Creates a new data base connection
+func (c Constructor) New(cfg config.DatabaseCfg, key string) (db_cfg.DataBase, error) {
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", cfg.Host, cfg.Port, cfg.Username, cfg.Password, cfg.Name))
 	if err != nil {
 		return nil, vanerrors.NewWrap(ErrorOpeningDataBase, err, vanerrors.EmptyHandler)
