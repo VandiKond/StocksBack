@@ -56,18 +56,18 @@ var StringSeparator = map[Separator]string{
 	AND: "and",
 }
 
-// the sing id
-type Sing int
+// the Sign id
+type Sign int
 
-// The sing ids using iota
+// The Sign ids uSign iota
 const (
-	EQUAL Sing = iota
+	EQUAL Sign = iota
 	MORE
 	LESS
 )
 
-// The map for string values of sings
-var StringSing = map[Sing]string{
+// The map for string values of Signs
+var StringSign = map[Sign]string{
 	EQUAL: "=",
 	MORE:  ">",
 	LESS:  "<",
@@ -77,13 +77,13 @@ var StringSing = map[Sing]string{
 //
 // Separator: Separator id
 // Type: UserField id
-// Sing: Sing id
+// Sign: Sign id
 // Not: need to use not
 // Y: The compare value
 type QuerySetting struct {
 	Separator Separator `json:"separator"`
 	Type      UserField `json:"type"`
-	Sing      Sing      `json:"sing"`
+	Sign      Sign      `json:"Sign"`
 	Not       bool      `json:"not"`
 	Y         any       `json:"y"`
 }
@@ -111,8 +111,8 @@ func (q QuerySetting) Run(X any) bool {
 			return false
 		}
 
-		// Switching by sing
-		switch q.Sing {
+		// Switching by Sign
+		switch q.Sign {
 		// Checking equal
 		case EQUAL:
 			res = uintX == uintY
@@ -139,8 +139,8 @@ func (q QuerySetting) Run(X any) bool {
 			return false
 		}
 
-		// Switching by sing
-		switch q.Sing {
+		// Switching by Sign
+		switch q.Sign {
 		// Checking equal
 		case EQUAL:
 			res = strX == strY
@@ -168,8 +168,8 @@ func (q QuerySetting) Run(X any) bool {
 			return false
 		}
 
-		// Switching by sing
-		switch q.Sing {
+		// Switching by Sign
+		switch q.Sign {
 		// Checking equal
 		case EQUAL:
 			res = boolX == boolY
@@ -197,8 +197,8 @@ func (q QuerySetting) Run(X any) bool {
 			return false
 		}
 
-		// Switching by sing
-		switch q.Sing {
+		// Switching by Sign
+		switch q.Sign {
 		// Checking equal
 		case EQUAL:
 			res = timeX.Equal(timeY)
@@ -338,23 +338,23 @@ func (query Query) Sort(users []user_cfg.User, num int) ([]user_cfg.User, error)
 	return res, nil
 }
 
-// Gets the string sing
-func SignToString(sing Sing, not bool) string {
-	if sing == EQUAL && not {
+// Gets the string Sign
+func SignToString(Sign Sign, not bool) string {
+	if Sign == EQUAL && not {
 		// !=
-		return "!" + StringSing[sing]
-	} else if sing == EQUAL && !not {
+		return "!" + StringSign[Sign]
+	} else if Sign == EQUAL && !not {
 		// ==
-		return StringSing[sing] + StringSing[sing]
-	} else if sing == MORE && not {
+		return StringSign[Sign] + StringSign[Sign]
+	} else if Sign == MORE && not {
 		// <=
-		return StringSing[LESS] + "="
-	} else if sing == LESS && not {
+		return StringSign[LESS] + "="
+	} else if Sign == LESS && not {
 		// >=
-		return StringSing[MORE] + "="
+		return StringSign[MORE] + "="
 	} else {
 		// > and <
-		return StringSing[sing]
+		return StringSign[Sign]
 	}
 }
 
@@ -369,7 +369,7 @@ func (query Query) String() string {
 
 		case NOT_SEPARATOR:
 			// Adding query setting expression
-			res += fmt.Sprintf("%s %s %v", StringUserField[qr.Type], SignToString(qr.Sing, qr.Not), qr.Y)
+			res += fmt.Sprintf("%s %s %v", StringUserField[qr.Type], SignToString(qr.Sign, qr.Not), qr.Y)
 
 		case OR, AND:
 			// Adding separator
@@ -391,7 +391,7 @@ func (query Query) PrepareString() (string, []any) {
 
 		case NOT_SEPARATOR:
 			// Adding query setting expression
-			resStr += fmt.Sprintf("%s %s $%d", StringUserField[qr.Type], SignToString(qr.Sing, qr.Not), i+1)
+			resStr += fmt.Sprintf("%s %s $%d", StringUserField[qr.Type], SignToString(qr.Sign, qr.Not), i+1)
 			resSlice = append(resSlice, qr.Y)
 		case OR, AND:
 			// Adding separator

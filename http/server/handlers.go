@@ -54,9 +54,9 @@ func (h *Handler) MainHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // It creates a new user
-func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	// Gets body
-	req := requests.SingUpRequest{}
+	req := requests.SignUpRequest{}
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -65,7 +65,7 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.SingUpResponseError{
+		responses.SignUpResponseError{
 			ErrorResponse: ToErrorResponse(resp),
 		}.
 			SendJson(w, http.StatusBadRequest)
@@ -73,8 +73,8 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Sings up
-	usr, err := req.SingUp(h.db)
+	// Signs up
+	usr, err := req.SignUp(h.db)
 
 	if err != nil {
 
@@ -86,12 +86,12 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Writes data
-		responses.SingUpResponseError{
+		responses.SignUpResponseError{
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)
 
-		h.logger.Warnf("unable to sing up, reason: %v", err)
+		h.logger.Warnf("unable to Sign up, reason: %v", err)
 		return
 	}
 
@@ -99,11 +99,11 @@ func (h *Handler) SingUpHandler(w http.ResponseWriter, r *http.Request) {
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.SingUpResponseOK{
+	json.NewEncoder(w).Encode(responses.SignUpResponseOK{
 		User: resp,
 	})
 
-	h.logger.Printf("sing up: %v", *usr)
+	h.logger.Printf("Sign up: %v", *usr)
 }
 
 // Farms
@@ -119,7 +119,7 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.SingUpResponseError{
+		responses.SignUpResponseError{
 			ErrorResponse: ToErrorResponse(err),
 		}.
 			SendJson(w, status)

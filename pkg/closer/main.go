@@ -14,7 +14,7 @@ const (
 	GotSomeErrors     = "got some errors"
 )
 
-// Func for closing
+// Func for closing 
 type Fn func() error
 
 // The closer

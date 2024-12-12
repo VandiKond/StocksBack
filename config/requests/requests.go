@@ -2,8 +2,8 @@ package requests
 
 import "github.com/VandiKond/StocksBack/pkg/user_service"
 
-type SingUpRequest struct {
-	user_service.SingUpUser
+type SignUpRequest struct {
+	user_service.SignUpUser
 }
 
 type FarmRequest struct{}

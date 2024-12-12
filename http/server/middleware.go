@@ -21,11 +21,11 @@ const (
 	InvalidHeader          = "invalid header"
 )
 
-// function with singing in
+// function with Signing in
 type HandlerFuncUser func(w http.ResponseWriter, r *http.Request, u user_cfg.User)
 
-// Sings in
-func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
+// Signs in
+func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Gets header
 		key := r.Header.Get("Key")
@@ -41,14 +41,14 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 				resp := vanerrors.NewSimple(InvalidHeader)
 
 				// Writes data
-				responses.SingInResponseError{
+				responses.SignInResponseError{
 					ErrorResponse: ToErrorResponse(resp),
 				}.
 					SendJson(w, http.StatusBadRequest)
 
 				return
 			}
-			usr, err := keyData.SingInWithKey(h.db)
+			usr, err := keyData.SignInWithKey(h.db)
 			if err != nil {
 
 				// Checks error variants
@@ -59,7 +59,7 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 				}
 
 				// Writes data
-				responses.SingInResponseError{
+				responses.SignInResponseError{
 					ErrorResponse: ToErrorResponse(err),
 				}.
 					SendJson(w, status)
@@ -81,7 +81,7 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			resp := vanerrors.NewSimple(NoAuthorizationHeaders)
 
 			// Writes data
-			responses.SingInResponseError{
+			responses.SignInResponseError{
 				ErrorResponse: ToErrorResponse(resp),
 			}.
 				SendJson(w, http.StatusUnauthorized)
@@ -97,14 +97,14 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			resp := vanerrors.NewSimple(InvalidHeader)
 
 			// Writes data
-			responses.SingInResponseError{
+			responses.SignInResponseError{
 				ErrorResponse: ToErrorResponse(resp),
 			}.
 				SendJson(w, http.StatusBadRequest)
 			return
 		}
 
-		ok, usr, err := authData.SingIn(h.db)
+		ok, usr, err := authData.SignIn(h.db)
 		if err != nil {
 			// Checks error variants
 			var status = http.StatusBadRequest
@@ -114,7 +114,7 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			}
 
 			// Writes data
-			responses.SingUpResponseError{
+			responses.SignUpResponseError{
 				ErrorResponse: ToErrorResponse(err),
 			}.
 				SendJson(w, status)
@@ -129,7 +129,7 @@ func (h *Handler) SingInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			resp := vanerrors.NewSimple(WrongPassword)
 
 			// Writes data
-			responses.SingUpResponseError{
+			responses.SignUpResponseError{
 				ErrorResponse: ToErrorResponse(resp),
 			}.
 				SendJson(w, http.StatusUnauthorized)
@@ -150,7 +150,7 @@ func CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFun
 			resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s is not allowed, allowed method: %s", r.Method, method))
 
 			// Writes data
-			responses.SingUpResponseError{
+			responses.SignUpResponseError{
 				ErrorResponse: ToErrorResponse(resp),
 			}.
 				SendJson(w, http.StatusBadRequest)
