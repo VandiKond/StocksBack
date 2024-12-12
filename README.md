@@ -110,6 +110,6 @@ Examples
 
 ## License 
 
-[LICENSE](LICESE)
+[LICENSE](LICENSE)
 
 
