@@ -1,0 +1,11 @@
+port : 8080 # your port
+
+database :
+  host : "localhost" # your host
+  port : 5432 # your port
+  username : "postgres" # your username
+  password : "your password"
+  name : "your database name"
+
+salt : "your salt"
+key : "your secret key for admin"
