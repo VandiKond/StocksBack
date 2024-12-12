@@ -31,20 +31,20 @@ func NewHandler(db db_cfg.DataBase, logger *logger.Logger) *Handler {
 	handler.funcs = map[string]http.HandlerFunc{
 		// Main page
 		"/": handler.MainHandler,
-		// Sing uo
-		"/singup": CheckMethodMiddleware(http.MethodPost, handler.SingUpHandler),
+		// Sign uo
+		"/Signup": CheckMethodMiddleware(http.MethodPost, handler.SignUpHandler),
 
 		// Stocks and solids
-		"/buy": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BuyStocksHandler)),
-		"/farm":       CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.FarmHandler)),
+		"/buy": CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BuyStocksHandler)),
+		"/farm":       CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.FarmHandler)),
 
 		// Name and password
-		"/change/name":     CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdateNameHandler)),
-		"/change/password": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UpdatePasswordHandler)),
+		"/change/name":     CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UpdateNameHandler)),
+		"/change/password": CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UpdatePasswordHandler)),
 
 		// Block
-		"/block":   CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.BlockHandler)),
-		"/unblock": CheckMethodMiddleware(http.MethodPatch, handler.SingInMiddleware(handler.UnblockHandler)),
+		"/block":   CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BlockHandler)),
+		"/unblock": CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UnblockHandler)),
 
 		// Get
 		"/get": CheckMethodMiddleware(http.MethodGet, handler.GetHandler),

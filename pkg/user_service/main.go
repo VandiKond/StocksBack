@@ -37,26 +37,26 @@ var (
 	StockCost    int64 = 30        // the stock cost
 )
 
-// Sing up data
-type SingUpUser struct {
+// Sign up data
+type SignUpUser struct {
 	Name     string `json:"name"`
 	Password string `json:"password"`
 }
 
-// Sing in data
-type SingInUser struct {
+// Sign in data
+type SignInUser struct {
 	Id       uint64 `json:"id"`
 	Password string `json:"password"`
 }
 
-// Sing in data with key
-type SingInKey struct {
+// Sign in data with key
+type SignInKey struct {
 	Key string `json:"key"`
 	Id  uint64 `json:"id"`
 }
 
 // Creates a new user
-func (u SingUpUser) SingUp(db db_cfg.DataBase) (*user_cfg.User, error) {
+func (u SignUpUser) SignUp(db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Gets the length of users
 	id, err := db.Len()
 	if err != nil {
@@ -78,8 +78,8 @@ func (u SingUpUser) SingUp(db db_cfg.DataBase) (*user_cfg.User, error) {
 	return usr, nil
 }
 
-// Singing in with secret key
-func (u SingInKey) SingInWithKey(db db_cfg.DataBase) (*user_cfg.User, error) {
+// Signing in with secret key
+func (u SignInKey) SignInWithKey(db db_cfg.DataBase) (*user_cfg.User, error) {
 	// Checking key
 	ok, err := db.CheckKey(u.Key)
 
@@ -102,8 +102,8 @@ func (u SingInKey) SingInWithKey(db db_cfg.DataBase) (*user_cfg.User, error) {
 	return usr, nil
 }
 
-// Sings in
-func (u SingInUser) SingIn(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
+// Signs in
+func (u SignInUser) SignIn(db db_cfg.DataBase) (bool, *user_cfg.User, error) {
 	// Selects the user by id
 	usr, err := Get(u.Id, db)
 	if err != nil {
@@ -174,7 +174,7 @@ func StockUpdate(db db_cfg.DataBase) ([]user_cfg.User, error) {
 		{
 			Separator: query.NOT_SEPARATOR,
 			Type:      query.STOCK_BALANCE,
-			Sing:      query.MORE,
+			Sign:      query.MORE,
 			Y:         uint64(0),
 		},
 		{
@@ -182,7 +182,7 @@ func StockUpdate(db db_cfg.DataBase) ([]user_cfg.User, error) {
 		}, {
 			Separator: query.NOT_SEPARATOR,
 			Type:      query.IS_BLOCKED,
-			Sing:      query.EQUAL,
+			Sign:      query.EQUAL,
 			Y:         false,
 		},
 	})

@@ -36,15 +36,15 @@ func (e ErrorResponse) SendJson(w http.ResponseWriter, code int) error {
 	return err
 }
 
-type SingUpResponseOK struct {
+type SignUpResponseOK struct {
 	User ResponseUser `json:"user"`
 }
 
-type SingUpResponseError struct {
+type SignUpResponseError struct {
 	ErrorResponse
 }
 
-type SingInResponseError struct {
+type SignInResponseError struct {
 	ErrorResponse
 }
 
