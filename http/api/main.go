@@ -10,7 +10,7 @@ import (
 type Response struct {
 	Ok          bool   `json:"ok"`
 	StatusCode  int    `json:"status_code"`
-	Description string `json:"description"`
+	Message     string `json:"message"`
 	ContentType string `json:"content-type"`
 	Data        any    `json:"data"`
 }
@@ -24,7 +24,7 @@ func SendOkResponse(w http.ResponseWriter, data any, contentType string) error {
 	resp := Response{
 		Ok:          true,
 		StatusCode:  http.StatusOK,
-		Description: "OK",
+		Message:     "OK",
 		ContentType: contentType,
 		Data:        data,
 	}
@@ -35,7 +35,7 @@ func SendErrorResponse(w http.ResponseWriter, status int, err error) error {
 	resp := Response{
 		Ok:          false,
 		StatusCode:  status,
-		Description: http.StatusText(status),
+		Message:     http.StatusText(status),
 		ContentType: responses.ErrorType,
 		Data:        err.Error(),
 	}
