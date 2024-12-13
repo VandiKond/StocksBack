@@ -1,6 +1,6 @@
 package requests
 
-import "github.com/VandiKond/StocksBack/pkg/user_service"
+import "github.com/vandi37/StocksBack/pkg/user_service"
 
 type SignUpRequest struct {
 	user_service.SignUpUser

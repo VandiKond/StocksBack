@@ -4,8 +4,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/VandiKond/StocksBack/pkg/logger"
+	"github.com/vandi37/StocksBack/pkg/logger"
 )
+
 // It is a cron data
 type Cron struct {
 	running bool

@@ -3,7 +3,7 @@ package hash
 import (
 	"fmt"
 
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/vanerrors"
 	"golang.org/x/crypto/sha3"
 )
 

@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/VandiKond/StocksBack/pkg/hash"
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/StocksBack/pkg/hash"
+	"github.com/vandi37/vanerrors"
 )
 
 // The errors

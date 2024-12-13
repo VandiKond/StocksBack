@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/VandiKond/StocksBack/config/headers"
-	"github.com/VandiKond/StocksBack/config/responses"
-	"github.com/VandiKond/StocksBack/config/user_cfg"
-	"github.com/VandiKond/StocksBack/pkg/user_service"
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/StocksBack/config/headers"
+	"github.com/vandi37/StocksBack/config/responses"
+	"github.com/vandi37/StocksBack/config/user_cfg"
+	"github.com/vandi37/StocksBack/pkg/user_service"
+	"github.com/vandi37/vanerrors"
 )
 
 // The errors

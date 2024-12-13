@@ -4,8 +4,8 @@ import (
 	"context"
 	"sync"
 
-	"github.com/VandiKond/StocksBack/pkg/logger"
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/StocksBack/pkg/logger"
+	"github.com/vandi37/vanerrors"
 )
 
 // Errors
@@ -14,7 +14,7 @@ const (
 	GotSomeErrors     = "got some errors"
 )
 
-// Func for closing 
+// Func for closing
 type Fn func() error
 
 // The closer

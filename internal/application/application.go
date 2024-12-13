@@ -6,15 +6,15 @@ import (
 	"os"
 	"time"
 
-	"github.com/VandiKond/StocksBack/config/config"
-	"github.com/VandiKond/StocksBack/config/db_cfg"
-	"github.com/VandiKond/StocksBack/http/server"
-	"github.com/VandiKond/StocksBack/pkg/closer"
-	"github.com/VandiKond/StocksBack/pkg/cron"
-	"github.com/VandiKond/StocksBack/pkg/hash"
-	"github.com/VandiKond/StocksBack/pkg/logger"
-	"github.com/VandiKond/StocksBack/pkg/user_service"
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/StocksBack/config/config"
+	"github.com/vandi37/StocksBack/config/db_cfg"
+	"github.com/vandi37/StocksBack/http/server"
+	"github.com/vandi37/StocksBack/pkg/closer"
+	"github.com/vandi37/StocksBack/pkg/cron"
+	"github.com/vandi37/StocksBack/pkg/hash"
+	"github.com/vandi37/StocksBack/pkg/logger"
+	"github.com/vandi37/StocksBack/pkg/user_service"
+	"github.com/vandi37/vanerrors"
 )
 
 // The errors

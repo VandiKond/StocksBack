@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/VandiKond/StocksBack/config/user_cfg"
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/StocksBack/config/user_cfg"
+	"github.com/vandi37/vanerrors"
 )
 
 // The errors

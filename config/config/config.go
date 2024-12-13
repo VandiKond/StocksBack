@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/vanerrors"
 	"gopkg.in/yaml.v3"
 )
 

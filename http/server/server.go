@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/VandiKond/StocksBack/config/db_cfg"
-	"github.com/VandiKond/StocksBack/config/responses"
-	"github.com/VandiKond/StocksBack/pkg/logger"
+	"github.com/vandi37/StocksBack/config/db_cfg"
+	"github.com/vandi37/StocksBack/config/responses"
+	"github.com/vandi37/StocksBack/pkg/logger"
 )
 
 // The handler func
@@ -35,8 +35,8 @@ func NewHandler(db db_cfg.DataBase, logger *logger.Logger) *Handler {
 		"/signup": CheckMethodMiddleware(http.MethodPost, handler.SignUpHandler),
 
 		// Stocks and solids
-		"/buy": CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BuyStocksHandler)),
-		"/farm":       CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.FarmHandler)),
+		"/buy":  CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BuyStocksHandler)),
+		"/farm": CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.FarmHandler)),
 
 		// Name and password
 		"/change/name":     CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UpdateNameHandler)),

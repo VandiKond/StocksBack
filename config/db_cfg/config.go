@@ -3,9 +3,9 @@ package db_cfg
 import (
 	"io"
 
-	"github.com/VandiKond/StocksBack/config/config"
-	"github.com/VandiKond/StocksBack/config/user_cfg"
-	"github.com/VandiKond/StocksBack/pkg/query"
+	"github.com/vandi37/StocksBack/config/config"
+	"github.com/vandi37/StocksBack/config/user_cfg"
+	"github.com/vandi37/StocksBack/pkg/query"
 )
 
 // The data base interface should represent any one-table data base

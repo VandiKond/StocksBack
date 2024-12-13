@@ -6,8 +6,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/VandiKond/StocksBack/internal/application"
-	"github.com/VandiKond/StocksBack/pkg/file_db"
+	"github.com/vandi37/StocksBack/internal/application"
+	"github.com/vandi37/StocksBack/pkg/file_db"
 )
 
 func main() {
