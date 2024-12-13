@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/VandiKond/StocksBack/config/config"
-	"github.com/VandiKond/StocksBack/config/db_cfg"
-	"github.com/VandiKond/StocksBack/config/user_cfg"
-	"github.com/VandiKond/StocksBack/pkg/query"
-	"github.com/VandiKond/vanerrors"
+	"github.com/vandi37/StocksBack/config/config"
+	"github.com/vandi37/StocksBack/config/db_cfg"
+	"github.com/vandi37/StocksBack/config/user_cfg"
+	"github.com/vandi37/StocksBack/pkg/query"
+	"github.com/vandi37/vanerrors"
 )
 
 // The errors

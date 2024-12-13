@@ -7,5 +7,9 @@ database :
   password : "your password"
   name : "your database name"
 
+app : 
+  is_service : false
+  duration: "1h" 
+
 salt : "your salt"
 key : "your secret key for admin"

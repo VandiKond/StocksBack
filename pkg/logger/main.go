@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/VandiKond/vanerrors/vanstack"
+	"github.com/vandi37/vanerrors/vanstack"
 )
 
 // The file names
