@@ -27,9 +27,9 @@ an api for stocks usage
 - [User service for all user activities](/pkg/user_service/main.go)
 - [Http handler and server](/http/server/)
 - Good structured headers, requests, responses
-    1. [Headers](/config/headers/headers.go)
-    2. [Requests](/config/requests/requests.go)
-    3. [Responses](/config/responses/responses.go)
+    1. [Headers](/http/api/input/headers/headers.go)
+    2. [Requests](/http/api/input/requests/requests.go)
+    3. [Responses](/http/api/responses/responses.go)
 - Timeout server and service mode
 
 ## Setup program 

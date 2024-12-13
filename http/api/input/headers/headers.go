@@ -2,10 +2,10 @@ package headers
 
 import "github.com/vandi37/StocksBack/pkg/user_service"
 
-type KeyHeader struct {
+type Key struct {
 	user_service.SignInKey
 }
 
-type AuthorizationHeader struct {
+type Authorization struct {
 	user_service.SignInUser
 }

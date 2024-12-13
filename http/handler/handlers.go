@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/vandi37/StocksBack/config/requests"
 	"github.com/vandi37/StocksBack/config/user_cfg"
 	"github.com/vandi37/StocksBack/http/api"
+	"github.com/vandi37/StocksBack/http/api/input/requests"
 	"github.com/vandi37/StocksBack/http/api/responses"
 	"github.com/vandi37/StocksBack/pkg/user_service"
 	"github.com/vandi37/vanerrors"
@@ -35,7 +35,7 @@ func ToResponseUser(usr user_cfg.User) responses.User {
 // It creates a new user
 func (h *Handler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	// Gets body
-	req := requests.SignUpRequest{}
+	req := requests.SignUp{}
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 // Buy stocks
 func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
-	var req requests.BuyStocksRequest
+	var req requests.BuyStocks
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -187,7 +187,7 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 // Update name
 func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
-	var req requests.UpdateNameRequest
+	var req requests.UpdateName
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -243,7 +243,7 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 // Update password
 func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
-	var req requests.UpdatePasswordRequest
+	var req requests.UpdatePassword
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -298,7 +298,7 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 // Block user
 func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
-	var req requests.BlockRequest
+	var req requests.Block
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -352,7 +352,7 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 // Unlock user
 func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
 	// Gets body
-	var req requests.UnblockRequest
+	var req requests.Unblock
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {
@@ -406,7 +406,7 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 // Get's user
 func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	// Gets body
-	var req requests.GetRequest
+	var req requests.Get
 	err := json.NewDecoder(r.Body).Decode(&req)
 
 	if err != nil {

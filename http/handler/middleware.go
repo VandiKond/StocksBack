@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/vandi37/StocksBack/config/headers"
 	"github.com/vandi37/StocksBack/config/user_cfg"
 	"github.com/vandi37/StocksBack/http/api"
+	"github.com/vandi37/StocksBack/http/api/input/headers"
 	"github.com/vandi37/StocksBack/pkg/user_service"
 	"github.com/vandi37/vanerrors"
 )
@@ -24,15 +24,36 @@ const (
 // function with Signing in
 type HandlerFuncUser func(w http.ResponseWriter, r *http.Request, u user_cfg.User)
 
+// Checks the method
+func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Checking method
+		if r.Method != method {
+
+			// Creates an error
+			resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s is not allowed, allowed method: %s", r.Method, method))
+
+			// Writes data
+			err := api.SendErrorResponse(w, http.StatusMethodNotAllowed, resp)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
+			return
+		}
+		next(w, r)
+	}
+}
+
 // Signs in
-func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
+func (h *Handler) AuthorizationMiddleware(next HandlerFuncUser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Gets header
 		key := r.Header.Get("Key")
 
 		if key != "" {
 			// Gets header data
-			var keyData headers.KeyHeader
+			var keyData headers.Key
 			err := json.Unmarshal([]byte(key), &keyData)
 
 			if err != nil {
@@ -91,7 +112,7 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			return
 		}
 		// Gets header data
-		var authData headers.AuthorizationHeader
+		var authData headers.Authorization
 		err := json.Unmarshal([]byte(key), &authData)
 
 		if err != nil {
@@ -143,27 +164,6 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 		}
 
 		next(w, r, *usr)
-	}
-}
-
-// Checks the method
-func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// Checking method
-		if r.Method != method {
-
-			// Creates an error
-			resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s is not allowed, allowed method: %s", r.Method, method))
-
-			// Writes data
-			err := api.SendErrorResponse(w, http.StatusMethodNotAllowed, resp)
-			if err != nil {
-				h.logger.Errorln(err)
-				return
-			}
-			return
-		}
-		next(w, r)
 	}
 }
 

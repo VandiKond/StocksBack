@@ -33,16 +33,16 @@ func NewHandler(db db_cfg.DataBase, logger *logger.Logger) *Handler {
 		"/signup": handler.CheckMethodMiddleware(http.MethodPost, handler.SignUpHandler),
 
 		// Stocks and solids
-		"/buy":  handler.CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BuyStocksHandler)),
-		"/farm": handler.CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.FarmHandler)),
+		"/buy":  handler.CheckMethodMiddleware(http.MethodPatch, handler.AuthorizationMiddleware(handler.BuyStocksHandler)),
+		"/farm": handler.CheckMethodMiddleware(http.MethodPatch, handler.AuthorizationMiddleware(handler.FarmHandler)),
 
 		// Name and password
-		"/change/name":     handler.CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UpdateNameHandler)),
-		"/change/password": handler.CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UpdatePasswordHandler)),
+		"/change/name":     handler.CheckMethodMiddleware(http.MethodPatch, handler.AuthorizationMiddleware(handler.UpdateNameHandler)),
+		"/change/password": handler.CheckMethodMiddleware(http.MethodPatch, handler.AuthorizationMiddleware(handler.UpdatePasswordHandler)),
 
 		// Block
-		"/block":   handler.KeyMiddleware(handler.CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.BlockHandler))),
-		"/unblock": handler.KeyMiddleware(handler.CheckMethodMiddleware(http.MethodPatch, handler.SignInMiddleware(handler.UnblockHandler))),
+		"/block":   handler.KeyMiddleware(handler.CheckMethodMiddleware(http.MethodPatch, handler.AuthorizationMiddleware(handler.BlockHandler))),
+		"/unblock": handler.KeyMiddleware(handler.CheckMethodMiddleware(http.MethodPatch, handler.AuthorizationMiddleware(handler.UnblockHandler))),
 
 		// Get
 		"/get": handler.CheckMethodMiddleware(http.MethodGet, handler.GetHandler),
