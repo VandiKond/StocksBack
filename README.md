@@ -52,62 +52,6 @@ Replace it with your data
 go run cmd/main.go
 ```
 
-You can edit [main file](/cmd/main.go)
-
-Examples
-
-1. With timeout
-    ```go
-    package main
-
-    import (
-        "context"
-        "os/signal"
-        "syscall"
-        "time"
-
-        "github.com/VandiKond/StocksBack/internal/application"
-        "github.com/VandiKond/StocksBack/pkg/db"
-    )
-
-    func main() {
-        // Creating a new application with a hour timeout
-        app := application.New(time.Hour, db.Constructor{})
-
-        // Adding graceful  shutdown
-        ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-        defer stop()
-
-        // Running the app
-        app.Run(ctx)
-    }
-    ```
-2. Service mode
-    ```go 
-    package main
-
-    import (
-        "context"
-        "os/signal"
-        "syscall"
-
-        "github.com/VandiKond/StocksBack/internal/application"
-        "github.com/VandiKond/StocksBack/pkg/db"
-    )
-
-    func main() {
-        // Creating a new service application
-        app := application.NewService(db.Constructor{})
-
-        // Adding graceful  shutdown
-        ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-        defer stop()
-
-        // Running the app
-        app.Run(ctx)
-    }
-    ```
-
 ## License 
 
 [LICENSE](LICENSE)
