@@ -1,4 +1,4 @@
-package server
+package handler
 
 import (
 	"encoding/json"
@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/vandi37/StocksBack/config/headers"
-	"github.com/vandi37/StocksBack/config/responses"
 	"github.com/vandi37/StocksBack/config/user_cfg"
+	"github.com/vandi37/StocksBack/http/api"
 	"github.com/vandi37/StocksBack/pkg/user_service"
 	"github.com/vandi37/vanerrors"
 )
@@ -41,10 +41,11 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 				resp := vanerrors.NewSimple(InvalidHeader)
 
 				// Writes data
-				responses.SignInResponseError{
-					ErrorResponse: ToErrorResponse(resp),
-				}.
-					SendJson(w, http.StatusBadRequest)
+				err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+				if err != nil {
+					h.logger.Errorln(err)
+					return
+				}
 
 				return
 			}
@@ -59,10 +60,11 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 				}
 
 				// Writes data
-				responses.SignInResponseError{
-					ErrorResponse: ToErrorResponse(err),
-				}.
-					SendJson(w, status)
+				err = api.SendErrorResponse(w, status, err)
+				if err != nil {
+					h.logger.Errorln(err)
+					return
+				}
 
 				h.logger.Warnf("unable to login with key, reason: %v", err)
 
@@ -81,10 +83,11 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			resp := vanerrors.NewSimple(NoAuthorizationHeaders)
 
 			// Writes data
-			responses.SignInResponseError{
-				ErrorResponse: ToErrorResponse(resp),
-			}.
-				SendJson(w, http.StatusUnauthorized)
+			err := api.SendErrorResponse(w, http.StatusUnauthorized, resp)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
 			return
 		}
 		// Gets header data
@@ -97,10 +100,11 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			resp := vanerrors.NewSimple(InvalidHeader)
 
 			// Writes data
-			responses.SignInResponseError{
-				ErrorResponse: ToErrorResponse(resp),
-			}.
-				SendJson(w, http.StatusBadRequest)
+			err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
 			return
 		}
 
@@ -114,10 +118,11 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			}
 
 			// Writes data
-			responses.SignUpResponseError{
-				ErrorResponse: ToErrorResponse(err),
-			}.
-				SendJson(w, status)
+			err = api.SendErrorResponse(w, status, err)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
 
 			h.logger.Warnf("unable to login, reason: %v", err)
 
@@ -129,10 +134,11 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 			resp := vanerrors.NewSimple(WrongPassword)
 
 			// Writes data
-			responses.SignUpResponseError{
-				ErrorResponse: ToErrorResponse(resp),
-			}.
-				SendJson(w, http.StatusUnauthorized)
+			err := api.SendErrorResponse(w, http.StatusUnauthorized, resp)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
 			return
 		}
 
@@ -141,7 +147,7 @@ func (h *Handler) SignInMiddleware(next HandlerFuncUser) http.HandlerFunc {
 }
 
 // Checks the method
-func CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
+func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Checking method
 		if r.Method != method {
@@ -150,12 +156,35 @@ func CheckMethodMiddleware(method string, next http.HandlerFunc) http.HandlerFun
 			resp := vanerrors.NewSimple(WrongMethod, fmt.Sprintf("method %s is not allowed, allowed method: %s", r.Method, method))
 
 			// Writes data
-			responses.SignUpResponseError{
-				ErrorResponse: ToErrorResponse(resp),
-			}.
-				SendJson(w, http.StatusBadRequest)
+			err := api.SendErrorResponse(w, http.StatusMethodNotAllowed, resp)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
 			return
 		}
 		next(w, r)
+	}
+}
+
+// Checks admin
+func (h *Handler) KeyMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Checking the key header (without it not allowed)
+		key := r.Header.Get("Key")
+
+		if key == "" {
+			// Creates an error
+			resp := vanerrors.NewSimple(InvalidHeader)
+
+			// Writes data
+			err := api.SendErrorResponse(w, http.StatusForbidden, resp)
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
+
+			return
+		}
 	}
 }

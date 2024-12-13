@@ -1,13 +1,13 @@
-package server
+package handler
 
 import (
 	"encoding/json"
 	"net/http"
-	"slices"
 
 	"github.com/vandi37/StocksBack/config/requests"
-	"github.com/vandi37/StocksBack/config/responses"
 	"github.com/vandi37/StocksBack/config/user_cfg"
+	"github.com/vandi37/StocksBack/http/api"
+	"github.com/vandi37/StocksBack/http/api/responses"
 	"github.com/vandi37/StocksBack/pkg/user_service"
 	"github.com/vandi37/vanerrors"
 )
@@ -16,11 +16,12 @@ import (
 const (
 	WrongMethod = "wrong method"
 	InvalidBody = "invalid body"
+	NotFound    = "not found"
 )
 
 // User to response user
-func ToResponseUser(usr user_cfg.User) responses.ResponseUser {
-	return responses.ResponseUser{
+func ToResponseUser(usr user_cfg.User) responses.User {
+	return responses.User{
 		Id:           usr.Id,
 		Name:         usr.Name,
 		SolidBalance: usr.SolidBalance,
@@ -29,28 +30,6 @@ func ToResponseUser(usr user_cfg.User) responses.ResponseUser {
 		LastFarming:  usr.LastFarming,
 		CreatedAt:    usr.CreatedAt,
 	}
-}
-
-// Vanerror to response error
-func ToErrorResponse(err error) responses.ErrorResponse {
-	return responses.ErrorResponse{
-		ErrorName: vanerrors.GetName(err),
-		Error:     vanerrors.GetMessage(err),
-	}
-}
-
-// Main page
-func (h *Handler) MainHandler(w http.ResponseWriter, r *http.Request) {
-	// Gets all pages
-	pages := []string{}
-	for fn := range h.funcs {
-		pages = append(pages, fn)
-	}
-	slices.Sort[[]string, string](pages)
-	// Sends data
-	json.NewEncoder(w).Encode(responses.MainResponse{
-		Pages: pages,
-	})
 }
 
 // It creates a new user
@@ -65,10 +44,11 @@ func (h *Handler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.SignUpResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		return
 	}
@@ -86,10 +66,11 @@ func (h *Handler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Writes data
-		responses.SignUpResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("unable to Sign up, reason: %v", err)
 		return
@@ -99,11 +80,13 @@ func (h *Handler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.SignUpResponseOK{
-		User: resp,
-	})
+	err = api.SendOkResponse(w, responses.SignUp{User: resp}, responses.SignUpType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
-	h.logger.Printf("Sign up: %v", *usr)
+	h.logger.Printf("Signup: %v", *usr)
 }
 
 // Farms
@@ -119,10 +102,11 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.SignUpResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("%v unable to farm, reason: %v", u, err)
 
@@ -133,10 +117,11 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.FarmResponseOK{
-		User:   resp,
-		Amount: amount,
-	})
+	err = api.SendOkResponse(w, responses.Farm{User: resp, Amount: amount}, responses.FarmType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("farm (%d) : %v", amount, *usr)
 }
@@ -153,10 +138,11 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.BuyStocksResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		return
 	}
@@ -172,10 +158,11 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.BuyStocksResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("%v unable to buy stocks, reason: %v", u, err)
 
@@ -186,9 +173,13 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.BuyStocksResponseOK{
+	err = api.SendOkResponse(w, responses.BuyStocks{
 		User: resp,
-	})
+	}, "buy-stocks")
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("buy stocks (%d) : %v", req.Num, *usr)
 }
@@ -205,10 +196,11 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.UpdateNameResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		return
 	}
@@ -223,10 +215,11 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.UpdateNameResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("%v unable to update name, reason: %v", u, err)
 
@@ -237,9 +230,11 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.UpdateNameResponseOK{
-		User: resp,
-	})
+	err = api.SendOkResponse(w, responses.UpdateName{User: resp}, responses.UpdateNameType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("update name (was %s) : %v", u.Name, *usr)
 
@@ -257,10 +252,12 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.UpdatePasswordResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
+
 		return
 	}
 
@@ -274,10 +271,11 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.UpdatePasswordResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("%v unable to update password, reason: %v", u, err)
 
@@ -288,31 +286,17 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.UpdatePasswordResponseOK{
-		User: resp,
-	})
+	err = api.SendOkResponse(w, responses.UpdatePassword{User: resp}, responses.UpdatePasswordType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("update password: %v", u.Name, *usr)
 }
 
 // Block user
 func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
-	// Checking the key header (without it not allowed)
-	key := r.Header.Get("Key")
-
-	if key == "" {
-		// Creates an error
-		resp := vanerrors.NewSimple(InvalidHeader)
-
-		// Writes data
-		responses.BlockResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusForbidden)
-
-		return
-	}
-
 	// Gets body
 	var req requests.BlockRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -322,10 +306,11 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.BlockResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		return
 	}
@@ -340,10 +325,11 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.BlockResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("%v unable to block, reason: %v", u, err)
 
@@ -354,31 +340,17 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.BlockResponseOK{
-		User: resp,
-	})
+	err = api.SendOkResponse(w, responses.Block{User: resp}, responses.BlockType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("block: %v", *usr)
 }
 
 // Unlock user
 func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_cfg.User) {
-	// Checking the key header (without it not allowed)
-	key := r.Header.Get("Key")
-
-	if key == "" {
-		// Creates an error
-		resp := vanerrors.NewSimple(InvalidHeader)
-
-		// Writes data
-		responses.BlockResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusForbidden)
-
-		return
-	}
-
 	// Gets body
 	var req requests.UnblockRequest
 	err := json.NewDecoder(r.Body).Decode(&req)
@@ -389,10 +361,11 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.UnblockResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 		return
 	}
 
@@ -406,10 +379,11 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.UnblockResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("%v unable to unblock, reason: %v", u, err)
 
@@ -420,9 +394,11 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.UnblockResponseOK{
-		User: resp,
-	})
+	err = api.SendOkResponse(w, responses.Unblock{User: resp}, responses.UnblockType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("unblock: %v", *usr)
 }
@@ -439,10 +415,11 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		resp := vanerrors.NewSimple(InvalidBody)
 
 		// Writes data
-		responses.UpdateNameResponseError{
-			ErrorResponse: ToErrorResponse(resp),
-		}.
-			SendJson(w, http.StatusBadRequest)
+		err = api.SendErrorResponse(w, http.StatusBadRequest, resp)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		return
 	}
@@ -457,10 +434,11 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 			status = http.StatusInternalServerError
 		}
 		// Writes data
-		responses.UpdateNameResponseError{
-			ErrorResponse: ToErrorResponse(err),
-		}.
-			SendJson(w, status)
+		err = api.SendErrorResponse(w, status, err)
+		if err != nil {
+			h.logger.Errorln(err)
+			return
+		}
 
 		h.logger.Warnf("user %d not got, reason:", req.Id, err)
 
@@ -471,9 +449,11 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	resp := ToResponseUser(*usr)
 
 	// Sends data
-	json.NewEncoder(w).Encode(responses.UpdateNameResponseOK{
-		User: resp,
-	})
+	err = api.SendOkResponse(w, responses.Get{User: resp}, responses.GetType)
+	if err != nil {
+		h.logger.Errorln(err)
+		return
+	}
 
 	h.logger.Printf("sended user: %v", *usr)
 }

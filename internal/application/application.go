@@ -9,6 +9,7 @@ import (
 	"github.com/vandi37/StocksBack/config/config"
 	"github.com/vandi37/StocksBack/config/db_cfg"
 	"github.com/vandi37/StocksBack/config/db_cfg/constructors"
+	"github.com/vandi37/StocksBack/http/handler"
 	"github.com/vandi37/StocksBack/http/server"
 	"github.com/vandi37/StocksBack/pkg/closer"
 	"github.com/vandi37/StocksBack/pkg/cron"
@@ -105,7 +106,7 @@ func (a *Application) Run(ctx context.Context) {
 	cr := cron.New(time.Hour*24, 21, CronFunc(db, logger), logger)
 	cr.Run()
 
-	handler := server.NewHandler(db, logger)
+	handler := handler.NewHandler(db, logger)
 	server := server.NewServer(handler, cfg.Port)
 	closer.Add(server.Close)
 
