@@ -27,11 +27,12 @@ const (
 
 // Thr application program
 type Application struct {
+	Config string
 }
 
 // Creates a new application
-func New() *Application {
-	return &Application{}
+func New(config string) *Application {
+	return &Application{Config: config}
 }
 
 // Cron func for updating user
@@ -54,7 +55,7 @@ func (a *Application) Run(ctx context.Context) {
 	logger := logger.New()
 
 	// Loading config
-	cfg, err := config.LoadConfig("config/config.yml")
+	cfg, err := config.LoadConfig(a.Config)
 	if err != nil {
 		logger.Fatalln(err)
 	}
