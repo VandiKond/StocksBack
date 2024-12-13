@@ -1,6 +1,7 @@
 port : 8080 # your port
 
 database :
+  type : "postgres"
   host : "localhost" # your host
   port : 5432 # your port
   username : "postgres" # your username
