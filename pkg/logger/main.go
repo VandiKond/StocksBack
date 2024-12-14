@@ -21,7 +21,7 @@ const ()
 
 // The time format
 const (
-	FORMAT string = "02.01.06 3:04:05 "
+	FORMAT string = "02.01.06 3:04:05"
 )
 
 // Log levels

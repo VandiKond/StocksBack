@@ -292,7 +292,7 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	h.logger.Printf("update password: %v", u.Name, *usr)
+	h.logger.Printf("update password: %v", *usr)
 }
 
 // Block user
