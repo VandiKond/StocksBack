@@ -33,6 +33,8 @@ func GetCode(err error) int {
 		return http.StatusInternalServerError
 	} else if s == ToEarlyFarming {
 		return http.StatusTooManyRequests
+	} else if s == WrongKey {
+		return http.StatusUnauthorized
 	}
 	return http.StatusBadRequest
 }
