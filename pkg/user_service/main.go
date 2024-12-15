@@ -3,6 +3,7 @@ package user_service
 import (
 	"fmt"
 	"math/rand/v2"
+	"net/http"
 	"time"
 
 	"github.com/vandi37/StocksBack/config/db_cfg"
@@ -25,10 +26,15 @@ const (
 	WrongKey           = "wrong key"
 )
 
-// Checks the error
-func IsServerError(err error) bool {
+// Gets the code by name
+func GetCode(err error) int {
 	s := vanerrors.GetName(err)
-	return s == ErrorGettingId || s == ErrorSelectingUser || s == ErrorUpdatingUser || s == ErrorCheckingKey
+	if s == ErrorGettingId || s == ErrorSelectingUser || s == ErrorUpdatingUser || s == ErrorCheckingKey {
+		return http.StatusInternalServerError
+	} else if s == ToEarlyFarming {
+		return http.StatusTooManyRequests
+	}
+	return http.StatusBadRequest
 }
 
 // Global variables
