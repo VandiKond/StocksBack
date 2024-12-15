@@ -19,6 +19,7 @@ const (
 	WrongKey               = "wrong key"
 	NoAuthorizationHeaders = "no authorization headers"
 	InvalidHeader          = "invalid header"
+	NotAllowed             = "not allowed"
 )
 
 // function with Signing in
@@ -46,7 +47,7 @@ func (h *Handler) CheckMethodMiddleware(method string, next http.HandlerFunc) ht
 }
 
 // Signs in
-func (h *Handler) AuthorizationMiddleware(next HandlerFuncUser) http.HandlerFunc {
+func (h *Handler) AuthorizationMiddleware(checkBlock bool, next HandlerFuncUser) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Gets header
 		key := r.Header.Get("Key")
@@ -73,15 +74,8 @@ func (h *Handler) AuthorizationMiddleware(next HandlerFuncUser) http.HandlerFunc
 			usr, err := keyData.SignInWithKey(h.db)
 			if err != nil {
 
-				// Checks error variants
-				var status = http.StatusBadRequest
-				if user_service.IsServerError(err) {
-
-					status = http.StatusInternalServerError
-				}
-
 				// Writes data
-				err = api.SendErrorResponse(w, status, err)
+				err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 				if err != nil {
 					h.logger.Errorln(err)
 					return
@@ -89,6 +83,14 @@ func (h *Handler) AuthorizationMiddleware(next HandlerFuncUser) http.HandlerFunc
 
 				h.logger.Warnf("unable to login with key, reason: %v", err)
 
+				return
+			}
+			if checkBlock && usr.IsBlocked {
+				err = api.SendErrorResponse(w, http.StatusForbidden, vanerrors.NewSimple(NotAllowed, "user is blocked"))
+				if err != nil {
+					h.logger.Errorln(err)
+					return
+				}
 				return
 			}
 			next(w, r, *usr)
@@ -131,15 +133,8 @@ func (h *Handler) AuthorizationMiddleware(next HandlerFuncUser) http.HandlerFunc
 
 		ok, usr, err := authData.SignIn(h.db)
 		if err != nil {
-			// Checks error variants
-			var status = http.StatusBadRequest
-			if user_service.IsServerError(err) {
-
-				status = http.StatusInternalServerError
-			}
-
 			// Writes data
-			err = api.SendErrorResponse(w, status, err)
+			err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 			if err != nil {
 				h.logger.Errorln(err)
 				return
@@ -163,6 +158,14 @@ func (h *Handler) AuthorizationMiddleware(next HandlerFuncUser) http.HandlerFunc
 			return
 		}
 
+		if checkBlock && usr.IsBlocked {
+			err = api.SendErrorResponse(w, http.StatusForbidden, vanerrors.NewSimple(NotAllowed, "user is blocked"))
+			if err != nil {
+				h.logger.Errorln(err)
+				return
+			}
+			return
+		}
 		next(w, r, *usr)
 	}
 }

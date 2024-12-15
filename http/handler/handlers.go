@@ -58,15 +58,8 @@ func (h *Handler) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
-
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -95,14 +88,8 @@ func (h *Handler) FarmHandler(w http.ResponseWriter, r *http.Request, u user_cfg
 	amount, usr, err := user_service.Farm(u.Id, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -151,14 +138,8 @@ func (h *Handler) BuyStocksHandler(w http.ResponseWriter, r *http.Request, u use
 	usr, err := user_service.BuyStocks(u.Id, req.Num, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -208,14 +189,8 @@ func (h *Handler) UpdateNameHandler(w http.ResponseWriter, r *http.Request, u us
 	usr, err := user_service.UpdateName(u.Id, req.Name, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -264,14 +239,8 @@ func (h *Handler) UpdatePasswordHandler(w http.ResponseWriter, r *http.Request, 
 	usr, err := user_service.UpdatePassword(u.Id, req.Password, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -318,14 +287,8 @@ func (h *Handler) BlockHandler(w http.ResponseWriter, r *http.Request, u user_cf
 	usr, err := user_service.Block(u.Id, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -372,14 +335,8 @@ func (h *Handler) UnblockHandler(w http.ResponseWriter, r *http.Request, u user_
 	usr, err := user_service.Unblock(u.Id, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
@@ -427,14 +384,8 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	usr, err := user_service.Get(req.Id, h.db)
 
 	if err != nil {
-		// Checks error variants
-		var status = http.StatusBadRequest
-		if user_service.IsServerError(err) {
-
-			status = http.StatusInternalServerError
-		}
 		// Writes data
-		err = api.SendErrorResponse(w, status, err)
+		err = api.SendErrorResponse(w, user_service.GetCode(err), err)
 		if err != nil {
 			h.logger.Errorln(err)
 			return
