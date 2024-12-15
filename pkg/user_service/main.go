@@ -148,7 +148,7 @@ func Farm(id uint64, db db_cfg.DataBase) (int64, *user_cfg.User, error) {
 	// Checks the limit
 	expected_time := time.Now().Add(-FarmingLimit)
 	if usr.LastFarming.After(expected_time) {
-		return 0, usr, vanerrors.NewSimple(ToEarlyFarming)
+		return 0, usr, vanerrors.NewSimple(ToEarlyFarming, time.Until(expected_time).String())
 	}
 
 	// Gets the maximum value
